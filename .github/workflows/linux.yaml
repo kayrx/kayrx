@@ -39,15 +39,15 @@ jobs:
           override: true
 
       - name: Build only
-#         if: matrix.build-only
+        if: matrix.build-only
         uses: actions-rs/cargo@v1
         with:
           command: build
           args: ${{ matrix.features }}
 
-#       - name: Test
-#         if: matrix.build-only != true
-#         uses: actions-rs/cargo@v1
-#         with:
-#           command: test
-#           args: ${{ matrix.features }}
+      - name: Test
+        if: matrix.build-only != true
+        uses: actions-rs/cargo@v1
+        with:
+          command: test --all
+          args: ${{ matrix.features }}

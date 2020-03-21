@@ -1,7 +1,7 @@
 [package]
 name = "kayrx"
 version = "0.10.0"
-authors = ["Nikolay Kim <fafhrd91@gmail.com>",  "Tokio Contributors <team@tokio.rs>", "krircc <krircc@qq.com>"]
+authors = ["krircc <krircc@qq.com>"]
 documentation = "https://docs.rs/kayrx/"
 repository = "https://github.com/kayrx/kayrx"
 description = "The Kayrx Framework"
@@ -14,10 +14,6 @@ edition = "2018"
 [workspace]
 members = [
   ".",
-  "kayrx-macro",
-  "jrpc-macro",
-  "web-macro",
-  "kayrx-test",
 ]
 
 [package.metadata.docs.rs]
@@ -30,116 +26,12 @@ features = ["full"]
 [features]
 default = []
 
-cookie = ["coo-kie", "coo-kie/percent-encode"]
-
 [dependencies]
-kayrx-macro = "0.3.0"
-futures-core = "0.3.1"
-futures-channel = "0.3"
-futures-sink = "0.3.1"
-futures-util = "0.3"
-libc = "0.2.66"
-arc-swap = "~0.4"
-lazy_static = "1.4.0"
-num_cpus = "1.11.1" 
-bitflags = "1.2.1"
-bytes = "0.5.3"
-slab = "0.4"
-fxhash = "0.2.1"
-fnv = "1.0"
-log = "0.4"
-regex = "1.3"
-indexmap = "1.3"
-rand = "0.7"
-parking_lot = "0.10"
-memchr = "2.2.1"
-iovec = "0.1.4"
-pin-project = "0.4.6"
-pin-project-lite = "0.1"
-http = "0.2.0"
-httparse = "1.3"
-url = "2.1"
-encoding_rs = "0.8"
-mime = "0.3"
-mime_guess = "2.0.1"
-net2 = "0.2.33"
-serde = { version = "1.0", features=["derive"] }
-serde_json = "1.0"
-serde_urlencoded = "0.6.1"
-base64 = "0.11"
-derive_more = "0.99.2"
-either = "1.5.3"
-language-tags = "0.2"
-percent-encoding = "2.1"
-sha1 = "0.6"
-trust-dns-proto = "=0.18.0-alpha.2"
-trust-dns-resolver = "=0.18.0-alpha.2"
-time = { version = "0.2.7", default-features = false, features = ["std"] }
-twoway = "0.2"
-v_htmlescape = "0.4"
-brotli2 = { version="0.3.2" }                               # compression
-flate2 = { version = "1.0.13" }                             # compression
-
-rust-tls = { version = "0.16.0", package = "rustls" }
-webpki = { version = "0.21" }
-webpki-roots = { version = "0.17" }
-
-coo-kie = { version = "0.13.3", package = "cookie", optional = true }
-
-#  jrpc
-jrpc-macro = "1.0"
-bs58 = "0.3.0"
-futures = "0.3.4"
-futures-timer = "3.0.2"
-globset = "0.4"
-hashbrown = "0.7.0"
-smallvec = { version = "1.2.0", default-features = false }
-thiserror = "1.0.9"
-
-# webui
-web-macro = {path="./web-macro"}
-js-sys = "0.3"
-wasm-bindgen = "0.2.33"
-
-[dependencies.web-sys]
-version = "0.3"
-features = [
-    "Comment",
-    "Document",
-    "Element",
-    "HtmlElement",
-    "EventTarget",
-    "HtmlCollection",
-    "Node",
-    "NodeList",
-    "Text",
-    "CharacterData",
-    "Window",
-    "Event",
-    "MouseEvent",
-    "InputEvent",
-]
+actix-web = { version = "2.0", features = ["rustls", "openssl", "secure-cookies"] }
+hyper = "0.13"
+sqlx = { version = "0.2", default-features = false, features = ["macros", "runtime-tokio", "postgres"] }
 
 [dev-dependencies]
-bitflags = "1.2.1"
-bytes = "0.5"
-futures = "0.3"
-serde = { version = "1.0", features=["derive"] }
-serde_json = "1.0"
-derive_more = "0.99"
-wasm-bindgen-test = "0.2.33"
-console_error_panic_hook = "0.1.5"
-
-[dev-dependencies.web-sys]
-version = "0.3"
-features = [
-    "DomTokenList",
-    "HtmlInputElement",
-    "Event",
-    "MouseEvent",
-    "InputEvent",
-    "console",
-]
 
 [profile.release]
 lto = true

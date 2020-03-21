@@ -1,2 +1,0 @@
-# Kayrx test utilities
-
