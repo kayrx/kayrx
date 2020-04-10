@@ -1,4 +1,4 @@
-<div align="center">
+<!-- <div align="center">
  
  <span><img src="https://avatars0.githubusercontent.com/u/58360786?s=200&v=4" width="111" /></span>
   <p><h2>The Kayrx Framework</h2> </p>
@@ -18,8 +18,8 @@
     <a href="https://github.com/kayrx/awesome/tree/master/examples">Examples</a>
   </h3>
 </div>
-<br>
+<br> -->
 
 ## License
 
-MIT license (LICENSE-MIT or http://opensource.org/licenses/MIT)
+[MIT license]() or ( http://opensource.org/licenses/MIT)
