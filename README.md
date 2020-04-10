@@ -22,4 +22,4 @@
 
 ## License
 
-[MIT license]() or ( http://opensource.org/licenses/MIT)
+[MIT license](https://github.com/kayrx/kayrx/blob/master/LICENSE) or ( http://opensource.org/licenses/MIT)
