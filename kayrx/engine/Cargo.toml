@@ -1,8 +1,8 @@
 [package]
-name = "kayrx-async"
+name = "kayrx-engine"
 version = "0.10.0"
 authors = ["krircc <krircc@qq.com>"]
-documentation = "https://docs.rs/kayrx-async/"
+documentation = "https://docs.rs/kayrx-engine/"
 repository = "https://github.com/kayrx/kayrx"
 description = "The Kayrx Framework"
 categories = ["asynchronous", "network-programming", "web-programming"]
@@ -38,7 +38,7 @@ crossbeam-deque = "0.7.3"
 crossbeam-utils = "0.7.2"
 lazy_static = "1.4.0"
 log = { version = "0.4.8", optional = true }
-num_cpus = "1.12.0"
+num_cpus = "1.13.0"
 once_cell = "1.3.1"
 
 [dev-dependencies]

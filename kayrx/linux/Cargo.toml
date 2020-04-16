@@ -1,0 +1,30 @@
+[package]
+name = "kayrx-linux"
+version = "0.10.0"
+authors = ["krircc <krircc@qq.com>"]
+documentation = "https://docs.rs/kayrx-linux/"
+repository = "https://github.com/kayrx/kayrx"
+description = "The Kayrx Framework"
+categories = ["asynchronous", "network-programming", "web-programming"]
+keywords = ["async", "net", "http", "web"]
+license = "MIT"
+readme = "README.md"
+edition = "2018"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+
+[features]
+default = []
+
+
+[dependencies]
+
+[dev-dependencies]
+
+[profile.release]
+lto = true
+opt-level = 3
+codegen-units = 1
