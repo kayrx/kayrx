@@ -1,6 +1,6 @@
 [package]
 name = "kayrx-karx"
-version = "0.10.0"
+version = "0.1.0"
 authors = ["krircc <krircc@qq.com>"]
 documentation = "https://docs.rs/kayrx-karx/"
 repository = "https://github.com/kayrx/kayrx"
