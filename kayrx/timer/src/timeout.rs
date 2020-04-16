@@ -29,7 +29,7 @@ use std::task::{self, Poll};
 /// Create a new `Timeout` set to expire in 10 milliseconds.
 ///
 /// ```rust
-/// use kayrx::timer::timeout;
+/// use kayrx_timer::timeout;
 /// use kayrx::krse::sync::oneshot;
 ///
 /// use std::time::Duration;
@@ -70,7 +70,7 @@ where
 /// Create a new `Timeout` set to expire in 10 milliseconds.
 ///
 /// ```rust
-/// use kayrx::timer::{Instant, timeout_at};
+/// use kayrx_timer::{Instant, timeout_at};
 /// use kayrx::krse::sync::oneshot;
 ///
 /// use std::time::Duration;

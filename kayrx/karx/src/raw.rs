@@ -8,10 +8,10 @@ use core::ptr::NonNull;
 use core::sync::atomic::{AtomicUsize, Ordering};
 use core::task::{Context, Poll, RawWaker, RawWakerVTable, Waker};
 
-use crate::karx::header::Header;
-use crate::karx::state::*;
-use crate::karx::utils::{abort, abort_on_panic, extend};
-use crate::karx::Task;
+use crate::header::Header;
+use crate::state::*;
+use crate::utils::{abort, abort_on_panic, extend};
+use crate::Task;
 
 /// The vtable for a task.
 pub(crate) struct TaskVTable {

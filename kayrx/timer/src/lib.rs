@@ -44,7 +44,7 @@
 //! Wait 100ms and print "Hello World!"
 //!
 //! ```
-//! use kayrx::timer::delay_for;
+//! use kayrx_timer::delay_for;
 //!
 //! use std::time::Duration;
 //!
@@ -60,7 +60,7 @@
 //! prelude.
 //!
 //! ```
-//! use kayrx::timer::{timeout, Duration};
+//! use kayrx_timer::{timeout, Duration};
 //!
 //! async fn long_future() {
 //!     // do work here

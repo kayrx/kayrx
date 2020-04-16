@@ -9,15 +9,14 @@ mod system;
 mod task;
 
 use std::future::Future;
-use crate::karx;
 
 use self::system::SYSTEM;
 use self::task::TaskTag;
 
-type Task = karx::Task<TaskTag>;
+type Task = crate::Task<TaskTag>;
 
 /// Run the task.
 pub fn spawn<F: Future<Output = ()> + Send + 'static>(f: F) {
-  let (task, _) = karx::spawn(f, |t| SYSTEM.push(t), TaskTag::new());
+  let (task, _) = crate::spawn(f, |t| SYSTEM.push(t), TaskTag::new());
   task.schedule();
 }

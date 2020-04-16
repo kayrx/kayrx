@@ -14,14 +14,14 @@
 //! use futures_timer::Delay;
 //!
 //! fn main() {
-//!     lelet::spawn(async {
+//!     kayrx_karx::spawn(async {
 //!         for _ in 0..10 {
 //!             Delay::new(Duration::from_secs(1)).await;
 //!             println!("Non-blocking Hello World");
 //!         }
 //!     });
 //!
-//!     lelet::spawn(async {
+//!     kayrx_karx::spawn(async {
 //!         for _ in 0..10 {
 //!             thread::sleep(Duration::from_secs(1));
 //!             println!("Blocking Hello World");

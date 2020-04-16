@@ -6,10 +6,10 @@ use core::ptr::NonNull;
 use core::sync::atomic::Ordering;
 use core::task::Waker;
 
-use crate::karx::header::Header;
-use crate::karx::raw::RawTask;
-use crate::karx::state::*;
-use crate::karx::JoinHandle;
+use crate::header::Header;
+use crate::raw::RawTask;
+use crate::state::*;
+use crate::JoinHandle;
 
 /// Creates a new task.
 ///
@@ -45,7 +45,7 @@ use crate::karx::JoinHandle;
 /// let schedule = move |task| s.send(task).unwrap();
 ///
 /// // Create a task with the future and the schedule function.
-/// let (task, handle) = async_task::spawn(future, schedule, ());
+/// let (task, handle) = kayrx_karx::spawn(future, schedule, ());
 /// ```
 pub fn spawn<F, R, S, T>(future: F, schedule: S, tag: T) -> (Task<T>, JoinHandle<R, T>)
 where
@@ -110,7 +110,7 @@ where
 /// let schedule = move |task| s.send(task).unwrap();
 ///
 /// // Create a task with the future and the schedule function.
-/// let (task, handle) = async_task::spawn_local(future, schedule, ());
+/// let (task, handle) = kayrx_karx::spawn_local(future, schedule, ());
 /// ```
 pub fn spawn_local<F, R, S, T>(future: F, schedule: S, tag: T) -> (Task<T>, JoinHandle<R, T>)
 where

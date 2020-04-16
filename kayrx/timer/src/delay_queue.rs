@@ -76,7 +76,7 @@ macro_rules! ready {
 /// Using `DelayQueue` to manage cache entries.
 ///
 /// ```rust,no_run
-/// use kayrx::timer::{delay_queue, DelayQueue, Error};
+/// use kayrx_timer::{delay_queue, DelayQueue, Error};
 ///
 /// use futures::ready;
 /// use std::collections::HashMap;
@@ -221,7 +221,7 @@ impl<T> DelayQueue<T> {
     /// # Examples
     ///
     /// ```rust
-    /// use kayrx::timer::DelayQueue;
+    /// use kayrx_timer::DelayQueue;
     /// 
     /// let delay_queue: DelayQueue<u32> = DelayQueue::new();
     /// ```
@@ -238,7 +238,7 @@ impl<T> DelayQueue<T> {
     /// # Examples
     ///
     /// ```rust
-    /// use kayrx::timer::DelayQueue;
+    /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
     ///
     /// #[kayrx::main]
@@ -293,7 +293,7 @@ impl<T> DelayQueue<T> {
     /// Basic usage
     ///
     /// ```rust
-    /// use kayrx::timer::{DelayQueue, Duration, Instant};
+    /// use kayrx_timer::{DelayQueue, Duration, Instant};
     ///
     /// #[kayrx::main]
     /// async fn main() {
@@ -396,7 +396,7 @@ impl<T> DelayQueue<T> {
     /// Basic usage
     ///
     /// ```rust
-    /// use kayrx::timer::DelayQueue;
+    /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
     ///
     /// #[kayrx::main]
@@ -449,7 +449,7 @@ impl<T> DelayQueue<T> {
     /// Basic usage
     ///
     /// ```rust
-    /// use kayrx::timer::DelayQueue;
+    /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
     ///
     /// #[kayrx::main]
@@ -500,7 +500,7 @@ impl<T> DelayQueue<T> {
     /// Basic usage
     ///
     /// ```rust
-    /// use kayrx::timer::{DelayQueue, Duration, Instant};
+    /// use kayrx_timer::{DelayQueue, Duration, Instant};
     ///
     /// #[kayrx::main]
     /// async fn main() {
@@ -556,7 +556,7 @@ impl<T> DelayQueue<T> {
     /// Basic usage
     ///
     /// ```rust
-    /// use kayrx::timer::DelayQueue;
+    /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
     ///
     /// #[kayrx::main]
@@ -586,7 +586,7 @@ impl<T> DelayQueue<T> {
     /// # Examples
     ///
     /// ```rust
-    /// use kayrx::timer::DelayQueue;
+    /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
     ///
     /// #[kayrx::main]
@@ -614,7 +614,7 @@ impl<T> DelayQueue<T> {
     /// # Examples
     ///
     /// ```rust
-    /// use kayrx::timer::DelayQueue;
+    /// use kayrx_timer::DelayQueue;
     ///
     /// let delay_queue: DelayQueue<i32> = DelayQueue::with_capacity(10);
     /// assert_eq!(delay_queue.capacity(), 10);
@@ -628,7 +628,7 @@ impl<T> DelayQueue<T> {
     /// # Examples
     ///
     /// ```rust
-    /// use kayrx::timer::DelayQueue;
+    /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
     ///
     /// #[kayrx::main]
@@ -663,7 +663,7 @@ impl<T> DelayQueue<T> {
     /// # Examples
     ///
     /// ```
-    /// use kayrx::timer::DelayQueue;
+    /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
     ///
     /// #[kayrx::main]
@@ -688,7 +688,7 @@ impl<T> DelayQueue<T> {
     /// # Examples
     ///
     /// ```
-    /// use kayrx::timer::DelayQueue;
+    /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
     ///
     /// #[kayrx::main]

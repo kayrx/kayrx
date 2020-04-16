@@ -17,7 +17,7 @@ impl Instant {
     /// # Examples
     ///
     /// ```
-    /// use kayrx::timer::Instant;
+    /// use kayrx_timer::Instant;
     ///
     /// let now = Instant::now();
     /// ```
@@ -25,7 +25,7 @@ impl Instant {
         variant::now()
     }
 
-    /// Create a `kayrx::timer::Instant` from a `std::time::Instant`.
+    /// Create a `kayrx_timer::Instant` from a `std::time::Instant`.
     pub fn from_std(std: std::time::Instant) -> Instant {
         Instant { std }
     }
@@ -50,7 +50,7 @@ impl Instant {
     /// # Examples
     ///
     /// ```
-    /// use kayrx::timer::{Duration, Instant, delay_for};
+    /// use kayrx_timer::{Duration, Instant, delay_for};
     ///
     /// #[kayrx::main]
     /// async fn main() {
@@ -71,7 +71,7 @@ impl Instant {
     /// # Examples
     ///
     /// ```
-    /// use kayrx::timer::{Duration, Instant, delay_for};
+    /// use kayrx_timer::{Duration, Instant, delay_for};
     ///
     /// #[kayrx::main]
     /// async fn main() {
@@ -97,7 +97,7 @@ impl Instant {
     /// # Examples
     ///
     /// ```
-    /// use kayrx::timer::{Duration, Instant, delay_for};
+    /// use kayrx_timer::{Duration, Instant, delay_for};
     ///
     /// #[kayrx::main]
     /// async fn main() {
