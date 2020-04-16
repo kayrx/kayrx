@@ -4,8 +4,8 @@
 //!
 //! [`DelayQueue`]: struct.DelayQueue.html
 
-use crate::timer::wheel::{self, Wheel};
-use crate::timer::{delay_until, Delay, Duration, Error, Instant};
+use crate::wheel::{self, Wheel};
+use crate::{delay_until, Delay, Duration, Error, Instant};
 
 use slab::Slab;
 use std::cmp;
@@ -463,7 +463,7 @@ impl<T> DelayQueue<T> {
     /// }
     /// ```
     pub fn remove(&mut self, key: &Key) -> Expired<T> {
-        use crate::timer::wheel::Stack;
+        use crate::wheel::Stack;
 
         // Special case the `expired` queue
         if self.slab[key.index].expired {
@@ -723,7 +723,7 @@ impl<T> DelayQueue<T> {
                     ready!(Pin::new(&mut *delay).poll(cx));
                 }
 
-                let now = crate::timer::ms(delay.deadline() - self.start, crate::timer::Round::Down);
+                let now = crate::ms(delay.deadline() - self.start, crate::Round::Down);
 
                 self.poll = wheel::Poll::new(now);
             }
@@ -746,7 +746,7 @@ impl<T> DelayQueue<T> {
         let when = if when < self.start {
             0
         } else {
-            crate::timer::ms(when - self.start, crate::timer::Round::Up)
+            crate::ms(when - self.start, crate::Round::Up)
         };
 
         cmp::max(when, self.wheel.elapsed())

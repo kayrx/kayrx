@@ -1,5 +1,5 @@
-use crate::timer::driver::Entry;
-use crate::timer::Error;
+use crate::driver::Entry;
+use crate::Error;
 
 use std::ptr;
 use std::sync::atomic::AtomicPtr;

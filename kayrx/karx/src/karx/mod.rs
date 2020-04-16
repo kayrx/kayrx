@@ -1,4 +1,4 @@
-//! Task abstraction for building executors.
+//! Karx Async Execute Engine
 //!
 //! # Spawning
 //!
@@ -116,7 +116,6 @@
 //! [`Waker`]: https://doc.rust-lang.org/std/task/struct.Waker.html
 //! [`block_on`]: https://github.com/async-rs/async-task/blob/master/examples/block.rs
 
-mod executor;
 mod header;
 mod join_handle;
 mod raw;

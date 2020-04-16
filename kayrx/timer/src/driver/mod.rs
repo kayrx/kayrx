@@ -1,24 +1,25 @@
 //! Time driver
 
 mod atomic_stack;
-use self::atomic_stack::AtomicStack;
-
+mod atomic_waker;
+mod cell;
+pub(crate) mod future;
 mod entry;
-use self::entry::Entry;
-
 mod handle;
-pub(crate) use self::handle::{set_default, Handle};
-
+mod park;
 mod registration;
 pub(crate) use self::registration::Registration;
-
 mod stack;
-use self::stack::Stack;
 
+use self::atomic_stack::AtomicStack;
+use self::atomic_waker::AtomicWaker;
+use self::entry::Entry;
+pub(crate) use self::handle::{set_default, Handle};
+use self::stack::Stack;
 use std::sync::atomic::{AtomicU64, AtomicUsize};
-use crate::{Park, Unpark};
-use crate::timer::{wheel, Error};
-use crate::timer::{Clock, Duration, Instant};
+use self::park::{Park, Unpark};
+use crate::{wheel, Error};
+use crate::{Clock, Duration, Instant};
 
 use std::sync::atomic::Ordering::SeqCst;
 use std::sync::Arc;
@@ -149,9 +150,9 @@ where
 
     /// Run timer related logic
     fn process(&mut self) {
-        let now = crate::timer::ms(
+        let now = crate::ms(
             self.clock.now() - self.inner.start,
-            crate::timer::Round::Down,
+            crate::Round::Down,
         );
         let mut poll = wheel::Poll::new(now);
 
@@ -203,7 +204,7 @@ where
     ///
     /// Returns `None` if the entry was fired.
     fn add_entry(&mut self, entry: Arc<Entry>, when: u64) {
-        use crate::timer::wheel::InsertError;
+        use crate::wheel::InsertError;
 
         entry.set_when_internal(Some(when));
 
@@ -358,7 +359,7 @@ impl Inner {
             return 0;
         }
 
-        crate::timer::ms(deadline - self.start, crate::timer::Round::Up)
+        crate::ms(deadline - self.start, crate::Round::Up)
     }
 }
 

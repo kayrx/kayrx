@@ -1,5 +1,5 @@
-use crate::timer::driver::Entry;
-use crate::timer::{Duration, Error, Instant};
+use crate::driver::Entry;
+use crate::{Duration, Error, Instant};
 
 use std::sync::Arc;
 use std::task::{self, Poll};

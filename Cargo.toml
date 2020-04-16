@@ -1,4 +1,6 @@
 [workspace]
 members = [
-  "kayrx/engine",
+  "kayrx/kayrx",
+  "kayrx/karx",
+  "kayrx/timer",
 ]

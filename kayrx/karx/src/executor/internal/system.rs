@@ -10,7 +10,7 @@ use once_cell::sync::Lazy;
 #[cfg(feature = "tracing")]
 use log::trace;
 
-use crate::karx::executor::utils::{abort_on_panic, monotonic_ms};
+use crate::executor::utils::{abort_on_panic, monotonic_ms};
 
 use super::machine::Machine;
 use super::processor::Processor;

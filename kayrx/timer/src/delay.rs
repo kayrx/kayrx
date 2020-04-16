@@ -1,5 +1,5 @@
-use crate::timer::driver::Registration;
-use crate::timer::{Duration, Instant};
+use crate::driver::Registration;
+use crate::{Duration, Instant};
 
 use std::future::Future;
 use std::pin::Pin;

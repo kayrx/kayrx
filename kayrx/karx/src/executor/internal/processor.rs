@@ -7,7 +7,7 @@ use crossbeam_utils::Backoff;
 #[cfg(feature = "tracing")]
 use log::trace;
 
-use crate::karx::executor::utils::monotonic_ms;
+use crate::executor::utils::monotonic_ms;
 
 use super::machine::Machine;
 use super::system::SYSTEM;

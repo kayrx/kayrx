@@ -1,5 +1,5 @@
-use crate::future::poll_fn;
-use crate::timer::{delay_until, Delay, Duration, Instant};
+use crate::driver::future::poll_fn;
+use crate::{delay_until, Delay, Duration, Instant};
 
 use std::future::Future;
 use std::pin::Pin;

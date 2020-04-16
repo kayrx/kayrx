@@ -6,8 +6,8 @@ use crossbeam_deque::{Steal, Stealer, Worker};
 #[cfg(feature = "tracing")]
 use log::trace;
 
-use crate::karx::executor::thread_pool;
-use crate::karx::executor::utils::abort_on_panic;
+use crate::executor::thread_pool;
+use crate::executor::utils::abort_on_panic;
 
 use super::processor::Processor;
 use super::Task;

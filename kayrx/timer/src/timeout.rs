@@ -4,7 +4,7 @@
 //!
 //! [`Timeout`]: struct.Timeout.html
 
-use crate::timer::{delay_until, Delay, Duration, Instant};
+use crate::{delay_until, Delay, Duration, Instant};
 
 use std::fmt;
 use std::future::Future;

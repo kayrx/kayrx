@@ -1,4 +1,4 @@
-use crate::cell::CausalCell;
+use crate::driver::cell::CausalCell;
 
 use std::sync::atomic::{self, AtomicUsize};
 use std::fmt;

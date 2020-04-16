@@ -1,4 +1,4 @@
-use crate::timer::driver::Inner;
+use crate::driver::Inner;
 use std::cell::RefCell;
 use std::fmt;
 use std::marker::PhantomData;

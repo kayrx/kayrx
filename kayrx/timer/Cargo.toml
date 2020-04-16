@@ -1,8 +1,8 @@
 [package]
-name = "kayrx"
+name = "kayrx-timer"
 version = "0.10.0"
 authors = ["krircc <krircc@qq.com>"]
-documentation = "https://docs.rs/kayrx/"
+documentation = "https://docs.rs/kayrx-timer/"
 repository = "https://github.com/kayrx/kayrx"
 description = "The Kayrx Framework"
 categories = ["asynchronous", "network-programming", "web-programming"]
@@ -20,8 +20,9 @@ rustdoc-args = ["--cfg", "docsrs"]
 default = []
 
 [dependencies]
-kayrx-karx = {path = "../karx"}
-kayrx-timer = {path = "../timer"}
+futures-core = "0.3"
+pin-project-lite = "0.1"
+slab = "0.4.2"
 
 [dev-dependencies]
 

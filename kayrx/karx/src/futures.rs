@@ -1,39 +1,12 @@
-#![warn(
-    rust_2018_idioms,
-    unreachable_pub,
-    // missing_debug_implementations,
-    // missing_docs,
-)]
-#![allow(
-    warnings,
-    missing_docs,
-    type_alias_bounds,
-    clippy::type_complexity,
-    clippy::borrow_interior_mutable_const,
-    clippy::needless_doctest_main,
-    clippy::too_many_arguments,
-    clippy::new_without_default
-)]
+//! Futures Async Execute Engine
 
-extern crate alloc;
-
-mod kalloc;
-mod atomic_waker;
-mod cell;
-mod future;
-mod karx;
-mod park;
-mod timer;
-
-pub(crate) use park::{Park, Unpark, ParkThread, UnparkThread, CachedParkThread, ParkError};
-pub(crate) use self::atomic_waker::AtomicWaker;
 use futures_core::future::{BoxFuture, Future, LocalBoxFuture};
 use futures_executor::{LocalPool, LocalSpawner};
 use futures_util::task::{LocalSpawn as _, Spawn as _};
 
-/// The Engine for driving the test application.
-pub trait Engine {
-    /// The value for spawning test cases.
+/// The Runtime for driving the  application.
+pub trait Runtime {
+    /// The value for spawning  cases.
     type Spawner: Spawner;
 
     /// Create the instance of `Spawner`.
@@ -45,9 +18,9 @@ pub trait Engine {
         Fut: Future;
 }
 
-impl<T: ?Sized> Engine for &mut T
+impl<T: ?Sized> Runtime for &mut T
 where
-    T: Engine,
+    T: Runtime,
 {
     type Spawner = T::Spawner;
 
@@ -65,9 +38,9 @@ where
     }
 }
 
-impl<T: ?Sized> Engine for Box<T>
+impl<T: ?Sized> Runtime for Box<T>
 where
-    T: Engine,
+    T: Runtime,
 {
     type Spawner = T::Spawner;
 
@@ -85,15 +58,15 @@ where
     }
 }
 
-/// The value for spawning test cases.
+/// The value for spawning  cases.
 pub trait Spawner {
-    /// Spawn a task to execute a test case.
+    /// Spawn a task to execute a  case.
     fn spawn(&mut self, fut: BoxFuture<'static, ()>) -> anyhow::Result<()>;
 
-    /// Spawn a task to execute a test case onto the current thread.
+    /// Spawn a task to execute a  case onto the current thread.
     fn spawn_local(&mut self, fut: LocalBoxFuture<'static, ()>) -> anyhow::Result<()>;
 
-    /// Spawn a task to execute a test case which may block the running thread.
+    /// Spawn a task to execute a  case which may block the running thread.
     fn spawn_blocking(&mut self, f: Box<dyn FnOnce() + Send + 'static>) -> anyhow::Result<()>;
 }
 
@@ -137,18 +110,18 @@ where
     }
 }
 
-/// Create an instance of `Engine` used by the default test harness.
-pub fn default_engine() -> impl Engine {
-    DefaultEngine {
+/// Create an instance of `Runtime` used by the default  harness.
+pub fn default() -> impl Runtime {
+    DefaultRuntime {
         pool: LocalPool::new(),
     }
 }
 
-struct DefaultEngine {
+struct DefaultRuntime {
     pool: LocalPool,
 }
 
-impl Engine for DefaultEngine {
+impl Runtime for DefaultRuntime {
     type Spawner = DefaultSpawner;
 
     #[inline]

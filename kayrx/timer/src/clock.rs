@@ -2,7 +2,7 @@
 //!
 //! By default, `std::time::Instant::now()` is used. 
 
-use crate::timer::Instant;
+use crate::Instant;
 
 #[derive(Debug, Clone)]
 pub(crate) struct Clock {}
@@ -32,7 +32,7 @@ impl Clock {
 // Test Utils
 
 pub mod clock_util {
-    use crate::timer::{Duration, Instant};
+    use crate::{Duration, Instant};
 
     use std::cell::Cell;
     use std::sync::{Arc, Mutex};
