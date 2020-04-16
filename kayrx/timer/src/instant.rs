@@ -51,14 +51,16 @@ impl Instant {
     ///
     /// ```
     /// use kayrx_timer::{Duration, Instant, delay_for};
+    /// use kayrx_karx;
     ///
-    /// #[kayrx::main]
-    /// async fn main() {
-    ///     let now = Instant::now();
-    ///     delay_for(Duration::new(1, 0)).await;
-    ///     let new_now = Instant::now();
-    ///     println!("{:?}", new_now.checked_duration_since(now));
-    ///     println!("{:?}", now.checked_duration_since(new_now)); // None
+    /// fn main() {
+    ///          kayrx_karx::exec(async {
+    ///              let now = Instant::now();
+    ///              delay_for(Duration::new(1, 0)).await;
+    ///              let new_now = Instant::now();
+    ///              println!("{:?}", new_now.checked_duration_since(now));
+    ///              println!("{:?}", now.checked_duration_since(new_now)); // None
+    ///          });
     /// }
     /// ```
     pub fn checked_duration_since(&self, earlier: Instant) -> Option<Duration> {
@@ -72,14 +74,16 @@ impl Instant {
     ///
     /// ```
     /// use kayrx_timer::{Duration, Instant, delay_for};
+    /// use kayrx_karx;
     ///
-    /// #[kayrx::main]
-    /// async fn main() {
-    ///     let now = Instant::now();
-    ///     delay_for(Duration::new(1, 0)).await;
-    ///     let new_now = Instant::now();
-    ///     println!("{:?}", new_now.saturating_duration_since(now));
-    ///     println!("{:?}", now.saturating_duration_since(new_now)); // 0ns
+    /// fn main() {
+    ///          kayrx_karx::exec(async {
+    ///              let now = Instant::now();
+    ///              delay_for(Duration::new(1, 0)).await;
+    ///              let new_now = Instant::now();
+    ///              println!("{:?}", new_now.saturating_duration_since(now));
+    ///              println!("{:?}", now.saturating_duration_since(new_now)); // 0ns
+    ///          });
     /// }
     /// ```
     pub fn saturating_duration_since(&self, earlier: Instant) -> Duration {
@@ -98,13 +102,15 @@ impl Instant {
     ///
     /// ```
     /// use kayrx_timer::{Duration, Instant, delay_for};
+    /// use kayrx_karx;
     ///
-    /// #[kayrx::main]
-    /// async fn main() {
-    ///     let instant = Instant::now();
-    ///     let three_secs = Duration::from_secs(3);
-    ///     delay_for(three_secs).await;
-    ///     assert!(instant.elapsed() >= three_secs);
+    /// fn main() {
+    ///          kayrx_karx::exec(async {
+    ///              let instant = Instant::now();
+    ///              let three_secs = Duration::from_secs(3);
+    ///              delay_for(three_secs).await;
+    ///              assert!(instant.elapsed() >= three_secs);
+    ///          });
     /// }
     /// ```
     pub fn elapsed(&self) -> Duration {

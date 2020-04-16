@@ -240,19 +240,24 @@ impl<T> DelayQueue<T> {
     /// ```rust
     /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
+    /// use kayrx_karx;
     ///
-    /// #[kayrx::main]
-    /// async fn main() {
-    ///     let mut delay_queue = DelayQueue::with_capacity(10);
-    ///
-    ///     // These insertions are done without further allocation
-    ///     for i in 0..10 {
-    ///         delay_queue.insert(i, Duration::from_secs(i));
-    ///     }
-    ///
-    ///     // This will make the queue allocate additional storage
-    ///     delay_queue.insert(11, Duration::from_secs(11));
+    /// fn main() {
+    ///     kayrx_karx::exec(async {
+    /// 
+    ///          let mut delay_queue = DelayQueue::with_capacity(10);
+    ///     
+    ///          // These insertions are done without further allocation
+    ///          for i in 0..10 {
+    ///              delay_queue.insert(i, Duration::from_secs(i));
+    ///          }
+    ///     
+    ///          // This will make the queue allocate additional storage
+    ///          delay_queue.insert(11, Duration::from_secs(11));
+    /// 
+    ///     });
     /// }
+    /// 
     /// ```
     pub fn with_capacity(capacity: usize) -> DelayQueue<T> {
         DelayQueue {
@@ -295,15 +300,18 @@ impl<T> DelayQueue<T> {
     /// ```rust
     /// use kayrx_timer::{DelayQueue, Duration, Instant};
     ///
-    /// #[kayrx::main]
-    /// async fn main() {
-    ///     let mut delay_queue = DelayQueue::new();
-    ///     let key = delay_queue.insert_at(
-    ///         "foo", Instant::now() + Duration::from_secs(5));
+   /// use kayrx_karx;
     ///
-    ///     // Remove the entry
-    ///     let item = delay_queue.remove(&key);
-    ///     assert_eq!(*item.get_ref(), "foo");
+    /// fn main() {
+    ///     kayrx_karx::exec(async {
+    ///          let mut delay_queue = DelayQueue::new();
+    ///          let key = delay_queue.insert_at(
+    ///              "foo", Instant::now() + Duration::from_secs(5));
+    ///     
+    ///          // Remove the entry
+    ///          let item = delay_queue.remove(&key);
+    ///          assert_eq!(*item.get_ref(), "foo");
+    ///      });
     /// }
     /// ```
     ///
@@ -398,15 +406,17 @@ impl<T> DelayQueue<T> {
     /// ```rust
     /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
+   /// use kayrx_karx;
     ///
-    /// #[kayrx::main]
-    /// async fn main() {
-    ///     let mut delay_queue = DelayQueue::new();
-    ///     let key = delay_queue.insert("foo", Duration::from_secs(5));
-    ///
-    ///     // Remove the entry
-    ///     let item = delay_queue.remove(&key);
-    ///     assert_eq!(*item.get_ref(), "foo");
+    /// fn main() {
+    ///          kayrx_karx::exec(async {
+    ///          let mut delay_queue = DelayQueue::new();
+    ///          let key = delay_queue.insert("foo", Duration::from_secs(5));
+    ///     
+    ///          // Remove the entry
+    ///          let item = delay_queue.remove(&key);
+    ///          assert_eq!(*item.get_ref(), "foo");
+    ///      });
     /// }
     /// ```
     ///
@@ -451,15 +461,17 @@ impl<T> DelayQueue<T> {
     /// ```rust
     /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
+   /// use kayrx_karx;
     ///
-    /// #[kayrx::main]
-    /// async fn main() {
-    ///     let mut delay_queue = DelayQueue::new();
-    ///     let key = delay_queue.insert("foo", Duration::from_secs(5));
-    ///
-    ///     // Remove the entry
-    ///     let item = delay_queue.remove(&key);
-    ///     assert_eq!(*item.get_ref(), "foo");
+    /// fn main() {
+    ///          kayrx_karx::exec(async {
+    ///              let mut delay_queue = DelayQueue::new();
+    ///              let key = delay_queue.insert("foo", Duration::from_secs(5));
+    ///         
+    ///              // Remove the entry
+    ///              let item = delay_queue.remove(&key);
+    ///              assert_eq!(*item.get_ref(), "foo");
+    ///          });
     /// }
     /// ```
     pub fn remove(&mut self, key: &Key) -> Expired<T> {
@@ -501,17 +513,19 @@ impl<T> DelayQueue<T> {
     ///
     /// ```rust
     /// use kayrx_timer::{DelayQueue, Duration, Instant};
+   /// use kayrx_karx;
     ///
-    /// #[kayrx::main]
-    /// async fn main() {
-    ///     let mut delay_queue = DelayQueue::new();
-    ///     let key = delay_queue.insert("foo", Duration::from_secs(5));
-    ///
-    ///     // "foo" is scheduled to be returned in 5 seconds
-    ///
-    ///     delay_queue.reset_at(&key, Instant::now() + Duration::from_secs(10));
-    ///
-    ///     // "foo"is now scheduled to be returned in 10 seconds
+    /// fn main() {
+    ///          kayrx_karx::exec(async {
+    ///             let mut delay_queue = DelayQueue::new();
+    ///             let key = delay_queue.insert("foo", Duration::from_secs(5));
+    ///     
+    ///             // "foo" is scheduled to be returned in 5 seconds
+    ///     
+    ///             delay_queue.reset_at(&key, Instant::now() + Duration::from_secs(10));
+    ///     
+    ///             // "foo"is now scheduled to be returned in 10 seconds
+    ///         });
     /// }
     /// ```
     pub fn reset_at(&mut self, key: &Key, when: Instant) {
@@ -558,17 +572,19 @@ impl<T> DelayQueue<T> {
     /// ```rust
     /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
+    /// use kayrx_karx;
     ///
-    /// #[kayrx::main]
-    /// async fn main() {
-    ///     let mut delay_queue = DelayQueue::new();
-    ///     let key = delay_queue.insert("foo", Duration::from_secs(5));
-    ///
-    ///     // "foo" is scheduled to be returned in 5 seconds
-    ///
-    ///     delay_queue.reset(&key, Duration::from_secs(10));
-    ///
-    ///     // "foo"is now scheduled to be returned in 10 seconds
+    /// fn main() {
+    ///          kayrx_karx::exec(async {
+    ///             let mut delay_queue = DelayQueue::new();
+    ///             let key = delay_queue.insert("foo", Duration::from_secs(5));
+    ///     
+    ///             // "foo" is scheduled to be returned in 5 seconds
+    ///     
+    ///             delay_queue.reset(&key, Duration::from_secs(10));
+    ///     
+    ///             // "foo"is now scheduled to be returned in 10 seconds
+    ///         });
     /// }
     /// ```
     pub fn reset(&mut self, key: &Key, timeout: Duration) {
@@ -588,18 +604,20 @@ impl<T> DelayQueue<T> {
     /// ```rust
     /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
+    /// use kayrx_karx;
     ///
-    /// #[kayrx::main]
-    /// async fn main() {
-    ///     let mut delay_queue = DelayQueue::new();
-    ///
-    ///     delay_queue.insert("foo", Duration::from_secs(5));
-    ///
-    ///     assert!(!delay_queue.is_empty());
-    ///
-    ///     delay_queue.clear();
-    ///
-    ///     assert!(delay_queue.is_empty());
+    /// fn main() {
+    ///          kayrx_karx::exec(async {
+    ///              let mut delay_queue = DelayQueue::new();
+    ///         
+    ///              delay_queue.insert("foo", Duration::from_secs(5));
+    ///         
+    ///              assert!(!delay_queue.is_empty());
+    ///         
+    ///              delay_queue.clear();
+    ///         
+    ///              assert!(delay_queue.is_empty());
+    ///          });
     /// }
     /// ```
     pub fn clear(&mut self) {
@@ -630,13 +648,15 @@ impl<T> DelayQueue<T> {
     /// ```rust
     /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
+    /// use kayrx_karx;
     ///
-    /// #[kayrx::main]
-    /// async fn main() {
-    ///     let mut delay_queue: DelayQueue<i32> = DelayQueue::with_capacity(10);
-    ///     assert_eq!(delay_queue.len(), 0);
-    ///     delay_queue.insert(3, Duration::from_secs(5));
-    ///     assert_eq!(delay_queue.len(), 1);
+    /// fn main() {
+    ///          kayrx_karx::exec(async {
+    ///              let mut delay_queue: DelayQueue<i32> = DelayQueue::with_capacity(10);
+    ///              assert_eq!(delay_queue.len(), 0);
+    ///              delay_queue.insert(3, Duration::from_secs(5));
+    ///              assert_eq!(delay_queue.len(), 1);
+    ///          });
     /// }
     /// ```
     pub fn len(&self) -> usize {
@@ -665,15 +685,17 @@ impl<T> DelayQueue<T> {
     /// ```
     /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
+    /// use kayrx_karx;
     ///
-    /// #[kayrx::main]
-    /// async fn main() {
-    ///     let mut delay_queue = DelayQueue::new();
-    ///
-    ///     delay_queue.insert("hello", Duration::from_secs(10));
-    ///     delay_queue.reserve(10);
-    ///
-    ///     assert!(delay_queue.capacity() >= 11);
+    /// fn main() {
+    ///          kayrx_karx::exec(async {
+    ///              let mut delay_queue = DelayQueue::new();
+    ///         
+    ///              delay_queue.insert("hello", Duration::from_secs(10));
+    ///              delay_queue.reserve(10);
+    ///         
+    ///              assert!(delay_queue.capacity() >= 11);
+    ///          });
     /// }
     /// ```
     pub fn reserve(&mut self, additional: usize) {
@@ -690,14 +712,16 @@ impl<T> DelayQueue<T> {
     /// ```
     /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
+    /// use kayrx_karx;
     ///
-    /// #[kayrx::main]
-    /// async fn main() {
-    ///     let mut delay_queue = DelayQueue::new();
-    ///     assert!(delay_queue.is_empty());
-    ///
-    ///     delay_queue.insert("hello", Duration::from_secs(5));
-    ///     assert!(!delay_queue.is_empty());
+    /// fn main() {
+    ///          kayrx_karx::exec(async {
+    ///              let mut delay_queue = DelayQueue::new();
+    ///              assert!(delay_queue.is_empty());
+    ///         
+    ///              delay_queue.insert("hello", Duration::from_secs(5));
+    ///              assert!(!delay_queue.is_empty());
+    ///          });
     /// }
     /// ```
     pub fn is_empty(&self) -> bool {

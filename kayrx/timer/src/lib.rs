@@ -45,14 +45,16 @@
 //!
 //! ```
 //! use kayrx_timer::delay_for;
-//!
 //! use std::time::Duration;
+//! use kayrx_karx;
 //!
-//!#[kayrx::main]
-//! async fn main() {
-//!     delay_for(Duration::from_millis(100)).await;
-//!     println!("100 ms have elapsed");
+//! fn main() {
+//!     kayrx_karx::exec(async {
+//!         delay_for(Duration::from_millis(100)).await;
+//!         println!("100 ms have elapsed");
+//!     });
 //! }
+//! 
 //! ```
 //!
 //! Require that an operation takes no more than 300ms. Note that this uses the

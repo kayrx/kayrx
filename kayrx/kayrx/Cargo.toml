@@ -20,8 +20,8 @@ rustdoc-args = ["--cfg", "docsrs"]
 default = []
 
 [dependencies]
-kayrx-karx = {path = "../karx"}
-kayrx-timer = {path = "../timer"}
+kayrx-karx = "0.1.1"
+kayrx-timer = "0.1.1"
 
 [dev-dependencies]
 

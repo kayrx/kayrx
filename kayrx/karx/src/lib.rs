@@ -123,8 +123,37 @@
 //! waker.wake_by_ref();
 //! ```
 //!
-//! This is useful for implementing single-future executors like [`block_on`].
+//! This is useful for implementing single-future executors like `block_on`.
 //!
+//! Dynamic task internal. Inspired by golang runtime.
+//! 
+//! It is okay to do blocking inside a task, the internal will
+//! detect this, and scale the thread pool.
+//!
+//! ```rust
+//! use std::thread;
+//! use std::time::Duration;
+//!
+//! use futures_timer::Delay;
+//!
+//! fn main() {
+//!     kayrx_karx::exec(async {
+//!         for _ in 0..10 {
+//!             Delay::new(Duration::from_secs(1)).await;
+//!             println!("Non-blocking Hello World");
+//!         }
+//!     });
+//!
+//!     kayrx_karx::exec(async {
+//!         for _ in 0..10 {
+//!             thread::sleep(Duration::from_secs(1));
+//!             println!("Blocking Hello World");
+//!         }
+//!     });
+//!
+//!     thread::sleep(Duration::from_secs(11));
+//! }
+//! ```
 //! [`spawn`]: fn.spawn.html
 //! [`spawn_local`]: fn.spawn_local.html
 //! [`waker_fn`]: fn.waker_fn.html

@@ -30,16 +30,18 @@ macro_rules! ready {
 ///
 /// ```rust
 /// use kayrx_timer::{self, Duration};
+/// use kayrx_karx;
 ///
-/// #[kayrx::main]
-/// async fn main() {
-///     let mut interval = timer::interval(Duration::from_millis(10));
-///
-///     interval.tick().await;
-///     interval.tick().await;
-///     interval.tick().await;
-///
-///     // approximately 20ms have elapsed.
+/// fn main() {
+///          kayrx_karx::exec(async {
+///              let mut interval = timer::interval(Duration::from_millis(10));
+///         
+///              interval.tick().await;
+///              interval.tick().await;
+///              interval.tick().await;
+///         
+///              // approximately 20ms have elapsed.
+///          });
 /// }
 /// ```
 pub fn interval(period: Duration) -> Interval {
@@ -62,17 +64,19 @@ pub fn interval(period: Duration) -> Interval {
 ///
 /// ```
 /// use kayrx_timer::{interval_at, Duration, Instant};
+/// use kayrx_karx;
 ///
-/// #[kayrx::main]
-/// async fn main() {
-///     let start = Instant::now() + Duration::from_millis(50);
-///     let mut interval = interval_at(start, Duration::from_millis(10));
-///
-///     interval.tick().await;
-///     interval.tick().await;
-///     interval.tick().await;
-///
-///     // approximately 70ms have elapsed.
+/// fn main() {
+///          kayrx_karx::exec(async {
+///              let start = Instant::now() + Duration::from_millis(50);
+///              let mut interval = interval_at(start, Duration::from_millis(10));
+///         
+///              interval.tick().await;
+///              interval.tick().await;
+///              interval.tick().await;
+///         
+///              // approximately 70ms have elapsed.
+///          });
 /// }
 /// ```
 pub fn interval_at(start: Instant, period: Duration) -> Interval {
@@ -119,16 +123,18 @@ impl Interval {
     /// ```
     /// use kayrx_timer;
     /// use std::time::Duration;
+    /// use kayrx_karx;
     ///
-    /// #[kayrx::main]
-    /// async fn main() {
-    ///     let mut interval = timer::interval(Duration::from_millis(10));
-    ///
-    ///     interval.tick().await;
-    ///     interval.tick().await;
-    ///     interval.tick().await;
-    ///
-    ///     // approximately 20ms have elapsed.
+    /// fn main() {
+    ///          kayrx_karx::exec(async {
+    ///              let mut interval = timer::interval(Duration::from_millis(10));
+    ///         
+    ///              interval.tick().await;
+    ///              interval.tick().await;
+    ///              interval.tick().await;
+    ///         
+    ///              // approximately 20ms have elapsed.
+    ///          });
     /// }
     /// ```
     #[allow(clippy::should_implement_trait)] 

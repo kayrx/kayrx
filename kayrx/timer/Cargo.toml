@@ -1,6 +1,6 @@
 [package]
 name = "kayrx-timer"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["krircc <krircc@qq.com>"]
 documentation = "https://docs.rs/kayrx-timer/"
 repository = "https://github.com/kayrx/kayrx"
@@ -25,6 +25,7 @@ pin-project-lite = "0.1"
 slab = "0.4.2"
 
 [dev-dependencies]
+kayrx-karx = "0,1,1"
 
 [profile.release]
 lto = true
