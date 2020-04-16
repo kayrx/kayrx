@@ -166,7 +166,6 @@ pub mod clock_util {
         }
 
         // TODO: delete this. Some tests rely on this
-        #[cfg(test)]
         /// Return a new `Clock` instance that uses the current execution context's
         /// source of time.
         pub(crate) fn new_frozen() -> Clock {
@@ -189,7 +188,6 @@ pub mod clock_util {
         }
 
         // TODO: delete this as well
-        #[cfg(test)]
         pub(crate) fn advanced(&self) -> Duration {
             self.inner.frozen.lock().unwrap().unwrap()
         }

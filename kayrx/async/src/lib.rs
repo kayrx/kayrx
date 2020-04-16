@@ -15,7 +15,9 @@
     clippy::new_without_default
 )]
 
-mod alloc;
+extern crate alloc;
+
+mod kalloc;
 mod atomic_waker;
 mod cell;
 mod future;

@@ -260,7 +260,6 @@ impl Poll {
     }
 }
 
-#[cfg(all(test))]
 mod test {
     use super::*;
 
