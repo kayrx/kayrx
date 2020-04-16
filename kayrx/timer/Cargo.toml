@@ -1,6 +1,6 @@
 [package]
 name = "kayrx-timer"
-version = "0.10.0"
+version = "0.1.0"
 authors = ["krircc <krircc@qq.com>"]
 documentation = "https://docs.rs/kayrx-timer/"
 repository = "https://github.com/kayrx/kayrx"
