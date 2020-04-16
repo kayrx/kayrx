@@ -15,7 +15,6 @@ edition = "2018"
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
-
 [features]
 default = []
 
