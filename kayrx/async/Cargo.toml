@@ -1,0 +1,36 @@
+[package]
+name = "kayrx-async"
+version = "0.10.0"
+authors = ["krircc <krircc@qq.com>"]
+documentation = "https://docs.rs/kayrx-async/"
+repository = "https://github.com/kayrx/kayrx"
+description = "The Kayrx Framework"
+categories = ["asynchronous", "network-programming", "web-programming"]
+keywords = ["async", "net", "http", "web"]
+license = "MIT"
+readme = "README.md"
+edition = "2018"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+
+[features]
+default = []
+
+[dependencies]
+anyhow = "1"
+futures-core = "0.3"
+futures-executor = "0.3"
+futures-util = { version = "0.3", default-features = false, features = [ "std" ] }
+
+pin-project-lite = "0.1"
+slab = "0.4.2"
+
+[dev-dependencies]
+
+[profile.release]
+lto = true
+opt-level = 3
+codegen-units = 1

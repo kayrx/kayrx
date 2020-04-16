@@ -1,39 +1,4 @@
-[package]
-name = "kayrx"
-version = "0.10.0"
-authors = ["krircc <krircc@qq.com>"]
-documentation = "https://docs.rs/kayrx/"
-repository = "https://github.com/kayrx/kayrx"
-description = "The Kayrx Framework"
-categories = ["asynchronous", "network-programming", "web-programming"]
-keywords = ["async", "net", "http", "web"]
-license = "MIT"
-readme = "README.md"
-edition = "2018"
-
 [workspace]
 members = [
-  ".",
+  "kayrx/async",
 ]
-
-[package.metadata.docs.rs]
-all-features = true
-rustdoc-args = ["--cfg", "docsrs"]
-
-[package.metadata.playground]
-features = ["full"]
-
-[features]
-default = []
-
-[dependencies]
-actix-web = { version = "2.0", features = ["rustls", "openssl", "secure-cookies"] }
-hyper = "0.13"
-sqlx = { version = "0.2", default-features = false, features = ["macros", "runtime-tokio", "postgres"] }
-
-[dev-dependencies]
-
-[profile.release]
-lto = true
-opt-level = 3
-codegen-units = 1
