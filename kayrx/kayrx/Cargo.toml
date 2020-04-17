@@ -19,10 +19,49 @@ rustdoc-args = ["--cfg", "docsrs"]
 default = []
 
 [dependencies]
-kayrx-karx = "0.1.1"
-kayrx-timer = "0.1.1"
+
+# lxio
+net2 = "0.2"
+iovec = "0.1.4"
+
+# net, reactor
+crossbeam-utils = "0.6.5"
+lazy_static = "1.2.0"
+log = "0.4.6"
+num_cpus = "1.10.0"
+parking_lot = "0.9.0"
+slab = "0.4.2"
+libc = "0.2.48"
+async-datagram = "3.0.0"
+async-ready = "3.0.0"
+futures = "0.3.4"
+
+# timer
+futures-core = "0.3"
+pin-project-lite = "0.1"
+
+# futures-runtime
+anyhow = "1"
+futures-executor = "0.3"
+futures-util = { version = "0.3", default-features = false, features = [ "std" ] }
+
+# karx-runtime
+crossbeam-channel = "0.4.2"
+crossbeam-deque = "0.7.3"
+once_cell = "1.3.1"
 
 [dev-dependencies]
+bytes = "0.4.11"
+tempdir = "0.3.7"
+rand = "0.7.0"
+env_logger = {version = "0.6.0", default-features = false }
+crossbeam = "0.7.3"
+crossbeam-utils = "0.7.2"
+futures = "0.3.4"
+lazy_static = "1.4.0"
+futures-timer = "3.0.2"
+simple_logger = "1.6.0"
+
 
 [profile.release]
 lto = true
