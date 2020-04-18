@@ -6,16 +6,15 @@ use crate::reactor::platform;
 use crate::reactor::registration::Registration;
 use crate::lxio::{self, event::Evented};
 
-use futures::io::{AsyncRead, AsyncWrite};
-use futures::ready;
-use futures::task::Poll;
+use futures_io::{AsyncRead, AsyncWrite};
+use futures_util::ready;
 
 use std::fmt;
 use std::io::{self, Read, Write};
 use std::pin::Pin;
 use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering::Relaxed;
-use std::task::Context;
+use std::task::{Context, Poll};
 
 /// Associates an I/O resource that implements the [`std::io::Read`] and/or
 /// [`std::io::Write`] traits with the reactor that drives it.

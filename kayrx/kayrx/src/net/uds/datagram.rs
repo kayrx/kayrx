@@ -2,8 +2,7 @@ use crate::reactor::PollEvented;
 
 use async_datagram::AsyncDatagram;
 use async_ready::{AsyncReadReady, AsyncWriteReady, TakeError};
-use futures::ready;
-use futures::task::Poll;
+use futures_util::ready;
 use crate::lxio;
 
 use std::fmt;
@@ -13,7 +12,7 @@ use std::os::unix::io::{AsRawFd, RawFd};
 use std::os::unix::net::SocketAddr;
 use std::path::{Path, PathBuf};
 use std::pin::Pin;
-use std::task::Context;
+use std::task::{Context, Poll};
 use std::future::Future;
 
 /// An I/O object representing a Unix datagram socket.

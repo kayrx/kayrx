@@ -1,8 +1,6 @@
 use std::future::Future;
 use std::io;
 
-use kv_log_macro::trace;
-
 use crate::karx::RUNTIME;
 use crate::karx::{JoinKarx, Karx};
 use crate::karx::utils::abort_on_panic;
@@ -36,11 +34,7 @@ impl Builder {
         // Create a new Karx handle.
         let task = Karx::new(self.name);
 
-        // Log this `spawn` operation.
-        trace!("spawn", {
-            task_id: task.id().0,
-            parent_task_id: Karx::get_current(|t| t.id().0).unwrap_or(0),
-        });
+     
 
         let future = async move {
             // Drop Karx-locals on exit.
@@ -48,12 +42,6 @@ impl Builder {
                 Karx::get_current(|t| unsafe { t.drop_locals() });
             }
 
-            // Log completion on exit.
-            defer! {
-                trace!("completed", {
-                    task_id: Karx::get_current(|t| t.id().0),
-                });
-            }
 
             future.await
         };

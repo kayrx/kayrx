@@ -3,7 +3,7 @@ use std::net::TcpStream;
 use std::thread;
 
 use futures::executor;
-use futures::io::{AsyncReadExt, AsyncWriteExt};
+use futures_io::{AsyncReadExt, AsyncWriteExt};
 use futures::StreamExt;
 
 use romio::TcpListener;

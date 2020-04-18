@@ -15,13 +15,12 @@ use std::fmt;
 use std::io;
 use std::net::{Ipv4Addr, Ipv6Addr, SocketAddr};
 use std::pin::Pin;
-use std::task::Context;
+use std::task::{Context, Poll};
 
 use async_datagram::AsyncDatagram;
 use async_ready::{AsyncReadReady, AsyncWriteReady};
-use futures::Future;
-use futures::ready;
-use futures::task::Poll;
+use futures_core::Future;
+use futures_util::ready;
 use crate::lxio;
 
 use crate::reactor::PollEvented;

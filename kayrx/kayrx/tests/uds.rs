@@ -4,7 +4,7 @@ use std::os::unix::net::UnixStream as StdStream;
 use std::thread;
 
 use futures::future;
-use futures::io::{AsyncRead, AsyncReadExt, AsyncWriteExt};
+use futures_io::{AsyncRead, AsyncReadExt, AsyncWriteExt};
 use futures::{executor, Poll, Stream, StreamExt};
 use log::{error, info};
 use std::pin::Pin;

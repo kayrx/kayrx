@@ -20,7 +20,8 @@ use std::sync::atomic::Ordering::{Relaxed, SeqCst};
 use std::sync::{Arc, Weak};
 use std::time::{Duration, Instant};
 use std::{fmt, usize};
-use futures::task::{AtomicWaker, Context};
+use std::task::Context;
+use futures_util::task::AtomicWaker;
 use log::{debug, log_enabled, trace, Level};
 use slab::Slab;
 

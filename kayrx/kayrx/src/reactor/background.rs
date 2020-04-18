@@ -1,8 +1,8 @@
 use super::{Handle, Reactor};
 
-use futures::task::AtomicWaker;
-use futures::{executor, Future};
-use futures::task::Poll;
+use futures_util::task::AtomicWaker;
+use futures_executor;
+use futures_core::Future;
 use log::debug;
 
 use std::io;
@@ -10,7 +10,7 @@ use std::pin::Pin;
 use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering::SeqCst;
 use std::sync::Arc;
-use std::task::Context;
+use std::task::{Context, Poll};
 use std::thread;
 
 /// Handle to the reactor running on a background thread.
@@ -100,7 +100,7 @@ impl Drop for Background {
         inner.shutdown_now();
 
         let shutdown = Shutdown { inner };
-        let _ = executor::block_on(shutdown);
+        let _ = futures_executor::block_on(shutdown);
     }
 }
 

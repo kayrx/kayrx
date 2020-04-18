@@ -7,8 +7,8 @@ use std::task::{Context, Poll};
 use std::time::Duration;
 
 use async_ready::{AsyncReadReady, AsyncWriteReady};
-use futures::io::{AsyncRead, AsyncWrite};
-use futures::Future;
+use futures_io::{AsyncRead, AsyncWrite};
+use futures_core::Future;
 use crate::lxio;
 
 use crate::reactor::PollEvented;

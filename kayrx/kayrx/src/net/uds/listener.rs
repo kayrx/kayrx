@@ -3,8 +3,8 @@ use super::UnixStream;
 use crate::reactor::PollEvented;
 
 use async_ready::{AsyncReady, TakeError};
-use futures::{ready, Stream};
-use futures::task::Poll;
+use futures_util::ready;
+use futures_core::Stream;
 use crate::lxio;
 
 use std::fmt;
@@ -13,7 +13,7 @@ use std::os::unix::io::{AsRawFd, RawFd};
 use std::os::unix::net::{self, SocketAddr};
 use std::path::Path;
 use std::pin::Pin;
-use std::task::Context;
+use std::task::{Context, Poll};
 
 pub struct UnixListener {
     io: PollEvented<lxio::net::UnixListener>,

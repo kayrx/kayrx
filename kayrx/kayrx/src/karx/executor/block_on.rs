@@ -6,7 +6,6 @@ use std::task::{RawWaker, RawWakerVTable};
 use std::task::{Context, Poll , Waker};
 
 use crossbeam_utils::sync::Parker;
-use kv_log_macro::trace;
 
 use crate::karx::Karx;
 
@@ -41,23 +40,11 @@ where
     // Create a new karx handle.
     let task = Karx::new(None);
 
-    // Log this `block_on` operation.
-    trace!("block_on", {
-        task_id: task.id().0,
-        parent_task_id: Karx::get_current(|t| t.id().0).unwrap_or(0),
-    });
 
     let future = async move {
         // Drop task-locals on exit.
         defer! {
             Karx::get_current(|t| unsafe { t.drop_locals() });
-        }
-
-        // Log completion on exit.
-        defer! {
-            trace!("completed", {
-                task_id: Karx::get_current(|t| t.id().0),
-            });
         }
 
         future.await

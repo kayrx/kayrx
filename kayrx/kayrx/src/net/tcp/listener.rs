@@ -4,12 +4,11 @@ use std::fmt;
 use std::io;
 use std::net::{self, SocketAddr};
 use std::pin::Pin;
-use std::task::Context;
+use std::task::{Context, Poll};
 
 use async_ready::AsyncReady;
-use futures::stream::Stream;
-use futures::ready;
-use futures::task::Poll;
+use futures_core::stream::Stream;
+use futures_util::ready;
 use crate::lxio;
 
 use crate::reactor::PollEvented;
