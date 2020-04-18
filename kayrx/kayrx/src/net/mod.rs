@@ -1,4 +1,4 @@
-//! # Asynchronous networking bindings for TCP, UDP, and UDS
+//! # Async network TCP, UDP, UDS
 //!
 //! The types defined in this module are designed to closely follow the APIs of the
 //! analogous types in `std::net`. But rather than implementing synchronous traits

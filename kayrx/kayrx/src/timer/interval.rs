@@ -30,10 +30,10 @@ macro_rules! ready {
 ///
 /// ```rust
 /// use kayrx_timer::{self, Duration};
-/// use kayrx_karx;
+/// use kayrx::karx;
 ///
 /// fn main() {
-///          kayrx_karx::exec(async {
+///          kayrx::karx::exec(async {
 ///              let mut interval = timer::interval(Duration::from_millis(10));
 ///         
 ///              interval.tick().await;
@@ -64,10 +64,10 @@ pub fn interval(period: Duration) -> Interval {
 ///
 /// ```
 /// use kayrx_timer::{interval_at, Duration, Instant};
-/// use kayrx_karx;
+/// use kayrx::karx;
 ///
 /// fn main() {
-///          kayrx_karx::exec(async {
+///          kayrx::karx::exec(async {
 ///              let start = Instant::now() + Duration::from_millis(50);
 ///              let mut interval = interval_at(start, Duration::from_millis(10));
 ///         
@@ -123,10 +123,10 @@ impl Interval {
     /// ```
     /// use kayrx_timer;
     /// use std::time::Duration;
-    /// use kayrx_karx;
+    /// use kayrx::karx;
     ///
     /// fn main() {
-    ///          kayrx_karx::exec(async {
+    ///          kayrx::karx::exec(async {
     ///              let mut interval = timer::interval(Duration::from_millis(10));
     ///         
     ///              interval.tick().await;

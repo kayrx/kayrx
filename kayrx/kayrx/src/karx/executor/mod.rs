@@ -12,14 +12,14 @@
 //! use futures_timer::Delay;
 //!
 //! fn main() {
-//!     kayrx_karx::exec(async {
+//!     kayrx::karx::exec(async {
 //!         for _ in 0..10 {
 //!             Delay::new(Duration::from_secs(1)).await;
 //!             println!("Non-blocking Hello World");
 //!         }
 //!     });
 //!
-//!     kayrx_karx::exec(async {
+//!     kayrx::karx::exec(async {
 //!         for _ in 0..10 {
 //!             thread::sleep(Duration::from_secs(1));
 //!             println!("Blocking Hello World");

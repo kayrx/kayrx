@@ -240,10 +240,10 @@ impl<T> DelayQueue<T> {
     /// ```rust
     /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
-    /// use kayrx_karx;
+    /// use kayrx::karx;
     ///
     /// fn main() {
-    ///     kayrx_karx::exec(async {
+    ///     kayrx::karx::exec(async {
     /// 
     ///          let mut delay_queue = DelayQueue::with_capacity(10);
     ///     
@@ -300,10 +300,10 @@ impl<T> DelayQueue<T> {
     /// ```rust
     /// use kayrx_timer::{DelayQueue, Duration, Instant};
     ///
-   /// use kayrx_karx;
+   /// use kayrx::karx;
     ///
     /// fn main() {
-    ///     kayrx_karx::exec(async {
+    ///     kayrx::karx::exec(async {
     ///          let mut delay_queue = DelayQueue::new();
     ///          let key = delay_queue.insert_at(
     ///              "foo", Instant::now() + Duration::from_secs(5));
@@ -406,10 +406,10 @@ impl<T> DelayQueue<T> {
     /// ```rust
     /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
-   /// use kayrx_karx;
+   /// use kayrx::karx;
     ///
     /// fn main() {
-    ///          kayrx_karx::exec(async {
+    ///          kayrx::karx::exec(async {
     ///          let mut delay_queue = DelayQueue::new();
     ///          let key = delay_queue.insert("foo", Duration::from_secs(5));
     ///     
@@ -461,10 +461,10 @@ impl<T> DelayQueue<T> {
     /// ```rust
     /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
-   /// use kayrx_karx;
+   /// use kayrx::karx;
     ///
     /// fn main() {
-    ///          kayrx_karx::exec(async {
+    ///          kayrx::karx::exec(async {
     ///              let mut delay_queue = DelayQueue::new();
     ///              let key = delay_queue.insert("foo", Duration::from_secs(5));
     ///         
@@ -513,10 +513,10 @@ impl<T> DelayQueue<T> {
     ///
     /// ```rust
     /// use kayrx_timer::{DelayQueue, Duration, Instant};
-   /// use kayrx_karx;
+   /// use kayrx::karx;
     ///
     /// fn main() {
-    ///          kayrx_karx::exec(async {
+    ///          kayrx::karx::exec(async {
     ///             let mut delay_queue = DelayQueue::new();
     ///             let key = delay_queue.insert("foo", Duration::from_secs(5));
     ///     
@@ -572,10 +572,10 @@ impl<T> DelayQueue<T> {
     /// ```rust
     /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
-    /// use kayrx_karx;
+    /// use kayrx::karx;
     ///
     /// fn main() {
-    ///          kayrx_karx::exec(async {
+    ///          kayrx::karx::exec(async {
     ///             let mut delay_queue = DelayQueue::new();
     ///             let key = delay_queue.insert("foo", Duration::from_secs(5));
     ///     
@@ -604,10 +604,10 @@ impl<T> DelayQueue<T> {
     /// ```rust
     /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
-    /// use kayrx_karx;
+    /// use kayrx::karx;
     ///
     /// fn main() {
-    ///          kayrx_karx::exec(async {
+    ///          kayrx::karx::exec(async {
     ///              let mut delay_queue = DelayQueue::new();
     ///         
     ///              delay_queue.insert("foo", Duration::from_secs(5));
@@ -648,10 +648,10 @@ impl<T> DelayQueue<T> {
     /// ```rust
     /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
-    /// use kayrx_karx;
+    /// use kayrx::karx;
     ///
     /// fn main() {
-    ///          kayrx_karx::exec(async {
+    ///          kayrx::karx::exec(async {
     ///              let mut delay_queue: DelayQueue<i32> = DelayQueue::with_capacity(10);
     ///              assert_eq!(delay_queue.len(), 0);
     ///              delay_queue.insert(3, Duration::from_secs(5));
@@ -685,10 +685,10 @@ impl<T> DelayQueue<T> {
     /// ```
     /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
-    /// use kayrx_karx;
+    /// use kayrx::karx;
     ///
     /// fn main() {
-    ///          kayrx_karx::exec(async {
+    ///          kayrx::karx::exec(async {
     ///              let mut delay_queue = DelayQueue::new();
     ///         
     ///              delay_queue.insert("hello", Duration::from_secs(10));
@@ -712,10 +712,10 @@ impl<T> DelayQueue<T> {
     /// ```
     /// use kayrx_timer::DelayQueue;
     /// use std::time::Duration;
-    /// use kayrx_karx;
+    /// use kayrx::karx;
     ///
     /// fn main() {
-    ///          kayrx_karx::exec(async {
+    ///          kayrx::karx::exec(async {
     ///              let mut delay_queue = DelayQueue::new();
     ///              assert!(delay_queue.is_empty());
     ///         

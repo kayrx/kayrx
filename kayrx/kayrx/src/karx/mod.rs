@@ -15,7 +15,7 @@
     clippy::new_without_default
 )]
 
-//! Karx Async Execute Engine
+//! Karx async execute engine
 //!
 //! # Spawning
 //!
@@ -35,7 +35,7 @@
 //! # let schedule = move |task| sender.send(task).unwrap();
 //! #
 //! # // Construct a task.
-//! # let (task, handle) = kayrx_karx::spawn(future, schedule, ());
+//! # let (task, handle) = kayrx::karx::spawn(future, schedule, ());
 //! ```
 //!
 //! A task is constructed using either [`spawn`] or [`spawn_local`]:
@@ -50,7 +50,7 @@
 //! let schedule = move |task| sender.send(task).unwrap();
 //!
 //! // Construct a task.
-//! let (task, handle) = kayrx_karx::spawn(future, schedule, ());
+//! let (task, handle) = kayrx::karx::spawn(future, schedule, ());
 //!
 //! // Push the task into the queue by invoking its schedule function.
 //! task.schedule();
@@ -76,7 +76,7 @@
 //! # let schedule = move |task| sender.send(task).unwrap();
 //! #
 //! # // Construct a task.
-//! # let (task, handle) = kayrx_karx::spawn(future, schedule, ());
+//! # let (task, handle) = kayrx::karx::spawn(future, schedule, ());
 //! #
 //! # // Push the task into the queue by invoking its schedule function.
 //! # task.schedule();
@@ -116,7 +116,7 @@
 //! woken, the function gets called:
 //!
 //! ```
-//! let waker = kayrx_karx::waker_fn(|| println!("Wake!"));
+//! let waker = kayrx::karx::waker_fn(|| println!("Wake!"));
 //!
 //! // Prints "Wake!" twice.
 //! waker.wake_by_ref();
@@ -133,18 +133,19 @@
 //! ```rust
 //! use std::thread;
 //! use std::time::Duration;
+//! use kayrx;
 //!
 //! use futures_timer::Delay;
 //!
 //! fn main() {
-//!     kayrx_karx::exec(async {
+//!     kayrx::karx::exec(async {
 //!         for _ in 0..10 {
 //!             Delay::new(Duration::from_secs(1)).await;
 //!             println!("Non-blocking Hello World");
 //!         }
 //!     });
 //!
-//!     kayrx_karx::exec(async {
+//!     kayrx::karx::exec(async {
 //!         for _ in 0..10 {
 //!             thread::sleep(Duration::from_secs(1));
 //!             println!("Blocking Hello World");

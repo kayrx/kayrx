@@ -15,7 +15,7 @@
     clippy::new_without_default
 )]
 
-//! Time tracking
+//! Async time tracking
 //!
 //! This module provides a number of types for executing code after a set period
 //! of time.
@@ -46,10 +46,10 @@
 //! ```
 //! use kayrx_timer::delay_for;
 //! use std::time::Duration;
-//! use kayrx_karx;
+//! use kayrx::karx;
 //!
 //! fn main() {
-//!     kayrx_karx::exec(async {
+//!     kayrx::karx::exec(async {
 //!         delay_for(Duration::from_millis(100)).await;
 //!         println!("100 ms have elapsed");
 //!     });

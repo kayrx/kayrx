@@ -1,3 +1,5 @@
+//! kayrx reactor,  event loop.
+
 pub(crate) mod background;
 pub(crate) mod registration;
 mod sharded_rwlock;
@@ -27,7 +29,7 @@ use log::{debug, log_enabled, trace, Level};
 use slab::Slab;
 use crate::lxio::{self, event::Evented};
 
-/// The core reactor, or event loop.
+/// The kayrx reactor,  event loop.
 ///
 /// The event loop is the main source of blocking in an application which drives
 /// all other I/O events and notifications happening. Each event loop can have
