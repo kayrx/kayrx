@@ -1,4 +1,5 @@
 [workspace]
 members = [
   "kayrx/kayrx",
+  "kayrx/kayrx/kayrx-macro",
 ]

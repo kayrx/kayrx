@@ -1,9 +1,5 @@
 //! Karx async execute engine
 
-#[cfg(feature = "macro")]
-#[doc(inline)]
-pub use async_attributes::{main, test};
-
 #[macro_use]
 mod utils;
 

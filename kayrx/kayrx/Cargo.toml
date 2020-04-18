@@ -11,12 +11,6 @@ license = "MIT"
 readme = "README.md"
 edition = "2018"
 
-[workspace]
-members = [
-  ".",
-  "kayrx-macro"
-]
-
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
