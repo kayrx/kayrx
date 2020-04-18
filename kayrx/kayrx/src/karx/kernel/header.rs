@@ -4,9 +4,9 @@ use core::fmt;
 use core::sync::atomic::{AtomicUsize, Ordering};
 use core::task::Waker;
 
-use crate::karx::raw::TaskVTable;
-use crate::karx::state::*;
-use crate::karx::utils::{abort_on_panic, extend};
+use super::raw::TaskVTable;
+use super::state::*;
+use super::utils::{abort_on_panic, extend};
 
 /// The header of a task.
 ///

@@ -6,8 +6,8 @@ use core::ptr::NonNull;
 use core::sync::atomic::Ordering;
 use core::task::{Context, Poll, Waker};
 
-use crate::karx::header::Header;
-use crate::karx::state::*;
+use super::header::Header;
+use super::state::*;
 
 /// A handle that awaits the result of a task.
 ///

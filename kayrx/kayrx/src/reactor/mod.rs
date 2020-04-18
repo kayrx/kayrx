@@ -1,19 +1,16 @@
 //! kayrx reactor,  event loop.
 
-pub(crate) mod background;
-pub(crate) mod registration;
 mod sharded_rwlock;
 mod poll_evented;
+pub(crate) mod background;
+pub(crate) mod registration;
 
 
 #[doc(inline)]
 pub use async_datagram::*;
 #[doc(inline)]
 pub use async_ready::*;
-
 pub use self::poll_evented::PollEvented;
-use self::sharded_rwlock::RwLock;
-use self::background::Background;
 
 use std::cell::RefCell;
 use std::io;
@@ -23,10 +20,12 @@ use std::sync::atomic::Ordering::{Relaxed, SeqCst};
 use std::sync::{Arc, Weak};
 use std::time::{Duration, Instant};
 use std::{fmt, usize};
-
 use futures::task::{AtomicWaker, Context};
 use log::{debug, log_enabled, trace, Level};
 use slab::Slab;
+
+use self::sharded_rwlock::RwLock;
+use self::background::Background;
 use crate::lxio::{self, event::Evented};
 
 /// The kayrx reactor,  event loop.

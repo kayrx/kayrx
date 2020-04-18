@@ -6,10 +6,10 @@ use core::ptr::NonNull;
 use core::sync::atomic::Ordering;
 use core::task::Waker;
 
-use crate::karx::header::Header;
-use crate::karx::raw::RawTask;
-use crate::karx::state::*;
-use crate::karx::JoinHandle;
+use super::header::Header;
+use super::raw::RawTask;
+use super::state::*;
+use super::JoinHandle;
 
 /// Creates a new task.
 ///

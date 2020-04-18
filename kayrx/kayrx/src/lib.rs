@@ -19,9 +19,11 @@
 
 extern crate alloc;
 
+pub mod future;
 pub mod karx;
 pub mod net;
+pub mod sync;
 pub mod timer;
-pub mod reactor;
 
 pub(crate) mod lxio;
+pub(crate)  mod reactor;

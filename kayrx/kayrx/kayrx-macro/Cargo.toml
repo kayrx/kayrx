@@ -1,0 +1,21 @@
+[package]
+name = "kayrx-macro"
+version = "0.4.0"
+authors = ["krircc <krircc@qq.com>"]
+documentation = "https://docs.rs/kayrx-macro"
+repository = "https://github.com/kayrx/kayrx"
+description = "The Kayrx Framework"
+categories = ["asynchronous", "network-programming", "web-programming"]
+keywords = ["async", "net", "http", "web"]
+license = "MIT"
+readme = "README.md"
+edition = "2018"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "1.0", features = ["full"] }
+quote = "1.0"
+
+[dev-dependencies]

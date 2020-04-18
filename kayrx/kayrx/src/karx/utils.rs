@@ -1,64 +1,78 @@
-use core::alloc::Layout;
-use core::mem;
-
-/// Aborts the process.
-///
-/// To abort, this function simply panics while panicking.
-pub(crate) fn abort() -> ! {
-    struct Panic;
-
-    impl Drop for Panic {
-        fn drop(&mut self) {
-            panic!("aborting the process");
-        }
-    }
-
-    let _panic = Panic;
-    panic!("aborting the process");
-}
+use alloc::string::String;
 
 /// Calls a function and aborts if it panics.
 ///
 /// This is useful in unsafe code where we can't recover from panics.
 #[inline]
-pub(crate) fn abort_on_panic<T>(f: impl FnOnce() -> T) -> T {
+pub fn abort_on_panic<T>(f: impl FnOnce() -> T) -> T {
     struct Bomb;
 
     impl Drop for Bomb {
         fn drop(&mut self) {
-            abort();
+            std::process::abort();
         }
     }
 
     let bomb = Bomb;
     let t = f();
-    mem::forget(bomb);
+    std::mem::forget(bomb);
     t
 }
 
-/// Returns the layout for `a` followed by `b` and the offset of `b`.
-///
-/// This function was adapted from the currently unstable `Layout::extend()`:
-/// https://doc.rust-lang.org/nightly/std/alloc/struct.Layout.html#method.extend
-#[inline]
-pub(crate) fn extend(a: Layout, b: Layout) -> (Layout, usize) {
-    let new_align = a.align().max(b.align());
-    let pad = padding_needed_for(a, b.align());
+/// Generates a random number in `0..n`.
+pub fn random(n: u32) -> u32 {
+    use std::cell::Cell;
+    use std::num::Wrapping;
 
-    let offset = a.size().checked_add(pad).unwrap();
-    let new_size = offset.checked_add(b.size()).unwrap();
+    thread_local! {
+        static RNG: Cell<Wrapping<u32>> = {
+            // Take the address of a local value as seed.
+            let mut x = 0i32;
+            let r = &mut x;
+            let addr = r as *mut i32 as usize;
+            Cell::new(Wrapping(addr as u32))
+        }
+    }
 
-    let layout = Layout::from_size_align(new_size, new_align).unwrap();
-    (layout, offset)
+    RNG.with(|rng| {
+        // This is the 32-bit variant of Xorshift.
+        //
+        // Source: https://en.wikipedia.org/wiki/Xorshift
+        let mut x = rng.get();
+        x ^= x << 13;
+        x ^= x >> 17;
+        x ^= x << 5;
+        rng.set(x);
+
+        // This is a fast alternative to `x % n`.
+        //
+        // Author: Daniel Lemire
+        // Source: https://lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/
+        ((u64::from(x.0)).wrapping_mul(u64::from(n)) >> 32) as u32
+    })
 }
 
-/// Returns the padding after `layout` that aligns the following address to `align`.
-///
-/// This function was adapted from the currently unstable `Layout::padding_needed_for()`:
-/// https://doc.rust-lang.org/nightly/std/alloc/struct.Layout.html#method.padding_needed_for
-#[inline]
-pub(crate) fn padding_needed_for(layout: Layout, align: usize) -> usize {
-    let len = layout.size();
-    let len_rounded_up = len.wrapping_add(align).wrapping_sub(1) & !align.wrapping_sub(1);
-    len_rounded_up.wrapping_sub(len)
+/// Add additional context to errors
+pub(crate) trait Context {
+    fn context(self, message: impl Fn() -> String) -> Self;
+}
+
+/// Defers evaluation of a block of code until the end of the scope.
+#[doc(hidden)]
+macro_rules! defer {
+    ($($body:tt)*) => {
+        let _guard = {
+            pub struct Guard<F: FnOnce()>(Option<F>);
+
+            impl<F: FnOnce()> Drop for Guard<F> {
+                fn drop(&mut self) {
+                    (self.0).take().map(|f| f());
+                }
+            }
+
+            Guard(Some(|| {
+                let _ = { $($body)* };
+            }))
+        };
+    };
 }
