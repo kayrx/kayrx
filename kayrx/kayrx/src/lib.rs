@@ -23,7 +23,6 @@ extern crate alloc;
 #[doc(inline)]
 pub use kayrx_macro::{main, test};
 
-pub mod future;
 pub mod karx;
 pub mod net;
 pub mod sync;
