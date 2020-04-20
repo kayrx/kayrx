@@ -29,9 +29,9 @@ const READ_COUNT_MASK: usize = !(ONE_READ - 1);
 /// # Examples
 ///
 /// ```
-/// # async_std::task::block_on(async {
+/// # kayrx::karx::task::block_on(async {
 /// #
-/// use async_std::sync::RwLock;
+/// use kayrx::sync::RwLock;
 ///
 /// let lock = RwLock::new(5);
 ///
@@ -65,7 +65,7 @@ impl<T> RwLock<T> {
     /// # Examples
     ///
     /// ```
-    /// use async_std::sync::RwLock;
+    /// use kayrx::sync::RwLock;
     ///
     /// let lock = RwLock::new(0);
     /// ```
@@ -87,9 +87,9 @@ impl<T: ?Sized> RwLock<T> {
     /// # Examples
     ///
     /// ```
-    /// # async_std::task::block_on(async {
+    /// # kayrx::karx::task::block_on(async {
     /// #
-    /// use async_std::sync::RwLock;
+    /// use kayr::sync::RwLock;
     ///
     /// let lock = RwLock::new(1);
     ///
@@ -165,9 +165,9 @@ impl<T: ?Sized> RwLock<T> {
     /// # Examples
     ///
     /// ```
-    /// # async_std::task::block_on(async {
+    /// # kayrx::karx::task::block_on(async {
     /// #
-    /// use async_std::sync::RwLock;
+    /// use kayrx::sync::RwLock;
     ///
     /// let lock = RwLock::new(1);
     ///
@@ -212,9 +212,9 @@ impl<T: ?Sized> RwLock<T> {
     /// # Examples
     ///
     /// ```
-    /// # async_std::task::block_on(async {
+    /// # kayrx::karx::task::block_on(async {
     /// #
-    /// use async_std::sync::RwLock;
+    /// use kayrx::sync::RwLock;
     ///
     /// let lock = RwLock::new(1);
     ///
@@ -287,9 +287,9 @@ impl<T: ?Sized> RwLock<T> {
     /// # Examples
     ///
     /// ```
-    /// # async_std::task::block_on(async {
+    /// # kayrx::karx::task::block_on(async {
     /// #
-    /// use async_std::sync::RwLock;
+    /// use kayrx::sync::RwLock;
     ///
     /// let lock = RwLock::new(1);
     ///
@@ -313,7 +313,7 @@ impl<T: ?Sized> RwLock<T> {
     /// # Examples
     ///
     /// ```
-    /// use async_std::sync::RwLock;
+    /// use kayrx::sync::RwLock;
     ///
     /// let lock = RwLock::new(10);
     /// assert_eq!(lock.into_inner(), 10);
@@ -330,9 +330,9 @@ impl<T: ?Sized> RwLock<T> {
     /// # Examples
     ///
     /// ```
-    /// # async_std::task::block_on(async {
+    /// # kayrx::karx::task::block_on(async {
     /// #
-    /// use async_std::sync::RwLock;
+    /// use kayrx::sync::RwLock;
     ///
     /// let mut lock = RwLock::new(0);
     /// *lock.get_mut() = 10;

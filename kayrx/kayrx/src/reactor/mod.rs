@@ -190,8 +190,7 @@ impl Reactor {
     /// This function may also return any I/O error which occurs when polling
     /// for readiness of I/O objects with the OS. This is quite unlikely to
     /// arise and typically mean that things have gone horribly wrong at that
-    /// point. Currently this is primarily only known to happen for internal
-    /// bugs to `tokio` itself.
+    /// point. 
     fn turn(&mut self, max_wait: Option<Duration>) -> io::Result<Turn> {
         self.poll(max_wait)?;
         Ok(Turn { _priv: () })
