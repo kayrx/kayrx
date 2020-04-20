@@ -11,10 +11,10 @@ use crossbeam_deque::{Injector, Steal, Stealer, Worker};
 use crossbeam_utils::thread::scope;
 use once_cell::unsync::OnceCell;
 
-use super::Reactor;
-use super::executor::Runnable;
 use crate::sync::Spinlock;
-use crate::karx::utils::{abort_on_panic, random};
+use super::Reactor;
+use super::karx::Runnable;
+use super::karx::utils::{abort_on_panic, random};
 
 thread_local! {
     /// A reference to the current machine, if the current thread runs tasks.
@@ -106,7 +106,7 @@ impl Runtime {
                     idle = 0;
 
                     s.builder()
-                        .name("async-std/machine".to_string())
+                        .name("karx/machine".to_string())
                         .spawn(move |_| {
                             abort_on_panic(|| {
                                 let _ = MACHINE.with(|machine| machine.set(m.clone()));

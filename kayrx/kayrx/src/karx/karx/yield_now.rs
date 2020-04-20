@@ -17,9 +17,9 @@ use std::task::{Context, Poll};
 /// Basic usage:
 ///
 /// ```
-/// # async_std::task::block_on(async {
+/// # kayrx::karx::task::block_on(async {
 /// #
-/// use async_std::task;
+/// use kayrx::karx::task;
 ///
 /// task::yield_now().await;
 /// #

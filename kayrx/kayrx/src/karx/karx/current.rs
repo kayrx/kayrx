@@ -1,4 +1,4 @@
-use crate::karx::Karx;
+use super::Karx;
 
 /// Returns a handle to the current Karx.
 ///

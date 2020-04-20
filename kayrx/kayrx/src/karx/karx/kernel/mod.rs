@@ -1,9 +1,11 @@
+//! Asynchronous green-threads.
+
 mod header;
 mod join_handle;
 mod raw;
 mod state;
 mod task;
-mod utils;
+pub(crate) mod utils;
 mod waker_fn;
 
 pub use self::join_handle::JoinHandle;

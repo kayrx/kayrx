@@ -3,7 +3,7 @@ use std::error::Error;
 use std::fmt;
 use std::sync::atomic::{AtomicU32, Ordering};
 
-use super::karx::Karx;
+use super::Karx;
 
 /// The key for accessing a task-local value.
 ///
@@ -40,8 +40,7 @@ impl<T: Send + 'static> LocalKey<T> {
     /// #
     /// use std::cell::Cell;
     ///
-    /// use async_std::task;
-    /// use async_std::prelude::*;
+    /// use kayrx::karx::task;
     ///
     /// task_local! {
     ///     static NUMBER: Cell<u32> = Cell::new(5);
@@ -79,8 +78,7 @@ impl<T: Send + 'static> LocalKey<T> {
     /// #
     /// use std::cell::Cell;
     ///
-    /// use async_std::task;
-    /// use async_std::prelude::*;
+    /// use kayrx::karx::task;
     ///
     /// task_local! {
     ///     static VAL: Cell<u32> = Cell::new(5);

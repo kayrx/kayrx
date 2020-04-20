@@ -1,7 +1,7 @@
 use std::future::Future;
 
 use super::Builder;
-use crate::karx::JoinKarx;
+use super::JoinKarx;
 
 /// Spawns a Karx.
 ///
@@ -12,9 +12,9 @@ use crate::karx::JoinKarx;
 /// # Examples
 ///
 /// ```
-/// # async_std::task::block_on(async {
+/// # kayrx::karx::task::block_on(async {
 /// #
-/// use async_std::task;
+/// use kayrx::karx::task;
 ///
 /// let handle = task::spawn(async {
 ///     1 + 2

@@ -5,9 +5,8 @@ use std::time::Duration;
 use crossbeam_channel::{unbounded, Receiver, Sender};
 use once_cell::sync::Lazy;
 
-use crate::karx::JoinKarx;
-use crate::karx::Karx;
-use crate::karx::utils::abort_on_panic;
+use super::{Karx, JoinKarx};
+use super::utils::abort_on_panic;
 
 /// Spawns a blocking Karx.
 ///
@@ -15,20 +14,19 @@ use crate::karx::utils::abort_on_panic;
 /// is useful to prevent long-running synchronous operations from blocking the main futures
 /// executor.
 ///
-/// See also: [`Karx::block_on`], [`Karx::spawn`].
+/// See also: [`karx::block_on`], [`karx::spawn`].
 ///
-/// [`Karx::block_on`]: fn.block_on.html
-/// [`Karx::spawn`]: fn.spawn.html
+/// [`karx::block_on`]: fn.block_on.html
+/// [`karx::spawn`]: fn.spawn.html
 ///
 /// # Examples
 ///
 /// Basic usage:
 ///
 /// ```
-/// # #[cfg(feature = "unstable")]
-/// # async_std::Karx::block_on(async {
+/// # kayrx::karx::block_on(async {
 /// #
-/// use async_std::task;
+/// use kayrx::karx::task;
 ///
 /// task::spawn_blocking(|| {
 ///     println!("long-running task here");
@@ -44,12 +42,12 @@ where
     T: Send + 'static,
 {
     let schedule = |task| POOL.sender.send(task).unwrap();
-    let (task, handle) = crate::karx::kernel::spawn(async { f() }, schedule, Karx::new(None));
+    let (task, handle) = super::kernel::spawn(async { f() }, schedule, Karx::new(None));
     task.schedule();
     JoinKarx::new(handle)
 }
 
-type Runnable = crate::karx::kernel::Task<Karx>;
+type Runnable = super::kernel::Task<Karx>;
 
 struct Pool {
     sender: Sender<Runnable>,
@@ -72,7 +70,7 @@ fn start_thread() {
     let timeout = Duration::from_secs(1);
 
     thread::Builder::new()
-        .name("async-std/blocking".to_string())
+        .name("karx/blocking".to_string())
         .spawn(move || {
             loop {
                 let mut task = match POOL.receiver.recv_timeout(timeout) {

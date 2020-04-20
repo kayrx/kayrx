@@ -7,8 +7,7 @@ use std::task::{Context, Poll , Waker};
 
 use crossbeam_utils::sync::Parker;
 
-use crate::karx::Karx;
-
+use super::Karx;
 
 /// Spawns a karx and blocks the current thread on its result.
 ///

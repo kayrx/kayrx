@@ -2,8 +2,8 @@ use std::future::Future;
 use std::io;
 
 use crate::karx::RUNTIME;
-use crate::karx::{JoinKarx, Karx};
-use crate::karx::utils::abort_on_panic;
+use super::{JoinKarx, Karx};
+use super::utils::abort_on_panic;
 
 /// Karx builder that configures the settings of a new Karx.
 #[derive(Debug, Default)]
@@ -47,14 +47,14 @@ impl Builder {
         };
 
         let schedule = move |t| RUNTIME.schedule(Runnable(t));
-        let (task, handle) = crate::karx::kernel::spawn(future, schedule, task);
+        let (task, handle) = super::kernel::spawn(future, schedule, task);
         task.schedule();
         Ok(JoinKarx::new(handle))
     }
 }
 
 /// A runnable Karx.
-pub struct Runnable(crate::karx::kernel::Task<Karx>);
+pub struct Runnable(super::kernel::Task<Karx>);
 
 impl Runnable {
     /// Runs the task by polling its future once.

@@ -2,23 +2,23 @@ use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use super::karx::Karx;
+use super::Karx;
 
 /// A handle that awaits the result of a Karx.
 ///
-/// Dropping a [`JoinHandle`] will detach the Karx, meaning that there is no longer
+/// Dropping a [`JoinKarx`] will detach the Karx, meaning that there is no longer
 /// a handle to the Karx and no way to `join` on it.
 ///
 /// Created when a Karx is [spawned].
 ///
 /// [spawned]: fn.spawn.html
 #[derive(Debug)]
-pub struct JoinHandle<T>(crate::karx::kernel::JoinHandle<T, Karx>);
+pub struct JoinKarx<T>(super::kernel::JoinHandle<T, Karx>);
 
-impl<T> JoinHandle<T> {
-    /// Creates a new `JoinHandle`.
-    pub(crate) fn new(inner: crate::karx::kernel::JoinHandle<T, Karx>) -> JoinHandle<T> {
-        JoinHandle(inner)
+impl<T> JoinKarx<T> {
+    /// Creates a new `JoinKarx`.
+    pub(crate) fn new(inner: super::kernel::JoinHandle<T, Karx>) -> JoinKarx<T> {
+        JoinKarx(inner)
     }
 
     /// Returns a handle to the underlying karx.
@@ -26,9 +26,9 @@ impl<T> JoinHandle<T> {
     /// # Examples
     ///
     /// ```
-    /// # async_std::task::block_on(async {
+    /// # kayrx::karx::block_on(async {
     /// #
-    /// use async_std::task;
+    /// use kayrx::karx::task;
     ///
     /// let handle = task::spawn(async {
     ///     1 + 2
@@ -41,7 +41,7 @@ impl<T> JoinHandle<T> {
     }
 }
 
-impl<T> Future for JoinHandle<T> {
+impl<T> Future for JoinKarx<T> {
     type Output = T;
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {

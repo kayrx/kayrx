@@ -78,7 +78,7 @@ impl Selector {
             evts.events.set_len(cnt);
 
             for i in 0..cnt {
-                if evts.events[i].u64 as usize == awakener.0 {
+                if evts.events[i].u64 as usize == awakener.into() {
                     evts.events.remove(i);
                     return Ok(true);
                 }
