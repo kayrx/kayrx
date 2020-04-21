@@ -8,20 +8,20 @@ use std::task::{Context, Poll};
 /// of the execution queue, making room for other futures to execute. This is
 /// especially useful after running CPU-intensive operations inside a future.
 ///
-/// See also [`task::spawn_blocking`].
+/// See also [`karx::block`].
 ///
-/// [`task::spawn_blocking`]: fn.spawn_blocking.html
+/// [`karx::block`]: fn.block.html
 ///
 /// # Examples
 ///
 /// Basic usage:
 ///
 /// ```
-/// # kayrx::karx::task::block_on(async {
+/// # kayrx::karx::exec(async {
 /// #
-/// use kayrx::karx::task;
+/// use kayrx::karx;
 ///
-/// task::yield_now().await;
+/// karx::yield_now().await;
 /// #
 /// # })
 /// ```

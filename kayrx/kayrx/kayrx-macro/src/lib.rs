@@ -28,7 +28,7 @@ use syn::spanned::Spanned;
 ///     Ok(())
 /// }
 /// ```
-#[cfg(not(test))] // NOTE: exporting main breaks tests, we should file an issue.
+#[cfg(not(test))] // NOTE: exporting main breaks tests,  Work around for rust-lang/rust#62127
 #[proc_macro_attribute]
 pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(item as syn::ItemFn);
@@ -58,7 +58,7 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 #body
             }
 
-            kayrx::karx::block_on(async {
+            kayrx::karx::exec(async {
                 main().await
             })
         }
@@ -98,7 +98,7 @@ pub fn test(_attr: TokenStream, item: TokenStream) -> TokenStream {
         #[test]
         #(#attrs)*
         fn #name() #ret {
-            kayrx::karx::block_on(async { #body })
+            kayrx::karx::exec(async { #body })
         }
     };
 

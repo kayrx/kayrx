@@ -13,7 +13,7 @@ pub trait Runtime {
     fn spawner(&self) -> Self::Spawner;
 
     /// Run a future and wait for its result.
-    fn block_on<Fut>(&mut self, fut: Fut) -> Fut::Output
+    fn exec<Fut>(&mut self, fut: Fut) -> Fut::Output
     where
         Fut: Future;
 }
@@ -30,11 +30,11 @@ where
     }
 
     #[inline]
-    fn block_on<Fut>(&mut self, fut: Fut) -> Fut::Output
+    fn exec<Fut>(&mut self, fut: Fut) -> Fut::Output
     where
         Fut: Future,
     {
-        (**self).block_on(fut)
+        (**self).exec(fut)
     }
 }
 
@@ -50,11 +50,11 @@ where
     }
 
     #[inline]
-    fn block_on<Fut>(&mut self, fut: Fut) -> Fut::Output
+    fn exec<Fut>(&mut self, fut: Fut) -> Fut::Output
     where
         Fut: Future,
     {
-        (**self).block_on(fut)
+        (**self).exec(fut)
     }
 }
 
@@ -67,7 +67,7 @@ pub trait Spawner {
     fn spawn_local(&mut self, fut: LocalBoxFuture<'static, ()>) -> anyhow::Result<()>;
 
     /// Spawn a task to execute a  case which may block the running thread.
-    fn spawn_blocking(&mut self, f: Box<dyn FnOnce() + Send + 'static>) -> anyhow::Result<()>;
+    fn block(&mut self, f: Box<dyn FnOnce() + Send + 'static>) -> anyhow::Result<()>;
 }
 
 impl<T: ?Sized> Spawner for &mut T
@@ -85,8 +85,8 @@ where
     }
 
     #[inline]
-    fn spawn_blocking(&mut self, f: Box<dyn FnOnce() + Send + 'static>) -> anyhow::Result<()> {
-        (**self).spawn_blocking(f)
+    fn block(&mut self, f: Box<dyn FnOnce() + Send + 'static>) -> anyhow::Result<()> {
+        (**self).block(f)
     }
 }
 
@@ -105,8 +105,8 @@ where
     }
 
     #[inline]
-    fn spawn_blocking(&mut self, f: Box<dyn FnOnce() + Send + 'static>) -> anyhow::Result<()> {
-        (**self).spawn_blocking(f)
+    fn block(&mut self, f: Box<dyn FnOnce() + Send + 'static>) -> anyhow::Result<()> {
+        (**self).block(f)
     }
 }
 
@@ -121,6 +121,10 @@ struct DefaultRuntime {
     pool: LocalPool,
 }
 
+struct DefaultSpawner {
+    spawner: LocalSpawner,
+}
+
 impl Runtime for DefaultRuntime {
     type Spawner = DefaultSpawner;
 
@@ -132,16 +136,12 @@ impl Runtime for DefaultRuntime {
     }
 
     #[inline]
-    fn block_on<Fut>(&mut self, fut: Fut) -> Fut::Output
+    fn exec<Fut>(&mut self, fut: Fut) -> Fut::Output
     where
         Fut: Future,
     {
         self.pool.run_until(fut)
     }
-}
-
-struct DefaultSpawner {
-    spawner: LocalSpawner,
 }
 
 impl Spawner for DefaultSpawner {
@@ -153,7 +153,7 @@ impl Spawner for DefaultSpawner {
         self.spawner.spawn_local_obj(fut.into()).map_err(Into::into)
     }
 
-    fn spawn_blocking(&mut self, f: Box<dyn FnOnce() + Send + 'static>) -> anyhow::Result<()> {
+    fn block(&mut self, f: Box<dyn FnOnce() + Send + 'static>) -> anyhow::Result<()> {
         self.spawn_local(Box::pin(async move { f() }))
     }
 }

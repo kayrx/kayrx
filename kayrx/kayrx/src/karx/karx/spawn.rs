@@ -12,11 +12,11 @@ use super::JoinKarx;
 /// # Examples
 ///
 /// ```
-/// # kayrx::karx::task::block_on(async {
+/// # kayrx::karx::exec(async {
 /// #
-/// use kayrx::karx::task;
+/// use kayrx::karx;
 ///
-/// let handle = task::spawn(async {
+/// let handle = karx::spawn(async {
 ///     1 + 2
 /// });
 ///

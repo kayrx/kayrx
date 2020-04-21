@@ -28,9 +28,9 @@ impl<T: Send + 'static> LocalKey<T> {
     /// # Panics
     ///
     /// This function will panic if not called within the context of a task created by
-    /// [`block_on`], [`spawn`], or [`Builder::spawn`].
+    /// [`exec`], [`spawn`], or [`Builder::spawn`].
     ///
-    /// [`block_on`]: fn.block_on.html
+    /// [`exec`]: fn.exec.html
     /// [`spawn`]: fn.spawn.html
     /// [`Builder::spawn`]: struct.Builder.html#method.spawn
     ///
@@ -40,13 +40,13 @@ impl<T: Send + 'static> LocalKey<T> {
     /// #
     /// use std::cell::Cell;
     ///
-    /// use kayrx::karx::task;
+    /// use kayrx::karx;
     ///
     /// task_local! {
     ///     static NUMBER: Cell<u32> = Cell::new(5);
     /// }
     ///
-    /// task::block_on(async {
+    /// karx::exec(async {
     ///     let v = NUMBER.with(|c| c.get());
     ///     assert_eq!(v, 5);
     /// });
@@ -66,9 +66,9 @@ impl<T: Send + 'static> LocalKey<T> {
     /// The task-local value will be lazily initialized if this task has not accessed it before.
     ///
     /// This function returns an error if not called within the context of a task created by
-    /// [`block_on`], [`spawn`], or [`Builder::spawn`].
+    /// [`exec`], [`spawn`], or [`Builder::spawn`].
     ///
-    /// [`block_on`]: fn.block_on.html
+    /// [`exec`]: fn.exec.html
     /// [`spawn`]: fn.spawn.html
     /// [`Builder::spawn`]: struct.Builder.html#method.spawn
     ///
@@ -78,13 +78,13 @@ impl<T: Send + 'static> LocalKey<T> {
     /// #
     /// use std::cell::Cell;
     ///
-    /// use kayrx::karx::task;
+    /// use kayrx::karx;
     ///
     /// task_local! {
     ///     static VAL: Cell<u32> = Cell::new(5);
     /// }
     ///
-    /// task::block_on(async {
+    /// karx::exec(async {
     ///     let v = VAL.try_with(|c| c.get());
     ///     assert_eq!(v, Ok(5));
     /// });

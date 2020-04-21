@@ -5,11 +5,6 @@ mod poll_evented;
 pub(crate) mod background;
 pub(crate) mod registration;
 
-
-#[doc(inline)]
-pub use async_datagram::*;
-#[doc(inline)]
-pub use async_ready::*;
 pub use self::poll_evented::PollEvented;
 
 use std::cell::RefCell;

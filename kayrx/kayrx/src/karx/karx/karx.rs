@@ -184,7 +184,7 @@ impl fmt::Debug for Karx {
 /// ```
 /// use kayrx::karx;
 ///
-/// karx::block_on(async {
+/// karx::exec(async {
 ///     println!("id = {:?}", karx::current().id());
 /// })
 /// ```

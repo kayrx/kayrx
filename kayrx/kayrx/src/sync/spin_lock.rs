@@ -67,16 +67,16 @@ fn spinlock() {
     use std::sync::Arc;
 
     use crate::sync::{Spinlock};
-    use crate::task;
+    use crate::karx;
 
-    task::block_on(async {
+    karx::exec(async {
 
         let m = Arc::new(Spinlock::new(0));
         let mut tasks = vec![];
 
         for _ in 0..10 {
             let m = m.clone();
-            tasks.push(task::spawn(async move {
+            tasks.push(karx::spawn(async move {
                 *m.lock() += 1;
             }));
         }

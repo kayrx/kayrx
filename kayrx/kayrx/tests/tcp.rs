@@ -3,10 +3,10 @@ use std::net::TcpStream;
 use std::thread;
 
 use futures::executor;
-use futures_io::{AsyncReadExt, AsyncWriteExt};
+use futures::io::{AsyncReadExt, AsyncWriteExt};
 use futures::StreamExt;
 
-use romio::TcpListener;
+use kayrx::net::TcpListener;
 
 const THE_WINTERS_TALE: &[u8] = b"
                     Each your doing,
@@ -63,14 +63,12 @@ fn both_sides_async_using_threadpool() {
     let mut server = TcpListener::bind(&"127.0.0.1:0".parse().unwrap()).unwrap();
     let addr = server.local_addr().unwrap();
 
-    let mut pool = executor::ThreadPool::new().unwrap();
-
-    pool.run(Box::pin(async move {
-        let mut client = romio::TcpStream::connect(&addr).await.unwrap();
+    executor::block_on(Box::pin(async move {
+        let mut client = kayrx::net::TcpStream::connect(&addr).await.unwrap();
         client.write_all(THE_WINTERS_TALE).await.unwrap();
     }));
 
-    pool.run(Box::pin(async {
+    executor::block_on(Box::pin(async {
         let mut buf = vec![0; THE_WINTERS_TALE.len()];
         let mut incoming = server.incoming();
         let mut stream = incoming.next().await.unwrap().unwrap();

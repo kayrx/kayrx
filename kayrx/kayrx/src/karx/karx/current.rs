@@ -4,17 +4,17 @@ use super::Karx;
 ///
 /// # Panics
 ///
-/// This function will panic if not called within the context of a Karx created by [`block_on`],
+/// This function will panic if not called within the context of a Karx created by [`exec`],
 /// [`spawn`], or [`Builder::spawn`].
 ///
-/// [`block_on`]: fn.block_on.html
+/// [`exec`]: fn.exec.html
 /// [`spawn`]: fn.spawn.html
 /// [`Builder::spawn`]: struct.Builder.html#method.spawn
 ///
 /// # Examples
 ///
 /// ```
-/// # kayrx::karx::block_on(async {
+/// # kayrx::karx::exec(async {
 /// #
 /// use kayrx::karx;
 ///

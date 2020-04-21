@@ -20,7 +20,7 @@ thread_local! {
     /// A reference to the current machine, if the current thread runs tasks.
     static MACHINE: OnceCell<Arc<Machine>> = OnceCell::new();
 
-    /// This flag is set to true whenever `task::yield_now()` is invoked.
+    /// This flag is set to true whenever `karx::yield_now()` is invoked.
     static YIELD_NOW: Cell<bool> = Cell::new(false);
 }
 
@@ -249,7 +249,7 @@ impl Machine {
         let mut fails = 0;
 
         loop {
-            // Check if `task::yield_now()` was invoked and flush the slot if so.
+            // Check if `karx::yield_now()` was invoked and flush the slot if so.
             YIELD_NOW.with(|flag| {
                 if flag.replace(false) {
                     if let Some(p) = self.processor.lock().as_mut() {

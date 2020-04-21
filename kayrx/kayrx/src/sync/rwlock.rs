@@ -29,7 +29,7 @@ const READ_COUNT_MASK: usize = !(ONE_READ - 1);
 /// # Examples
 ///
 /// ```
-/// # kayrx::karx::task::block_on(async {
+/// # kayrx::karx::exec(async {
 /// #
 /// use kayrx::sync::RwLock;
 ///
@@ -87,7 +87,7 @@ impl<T: ?Sized> RwLock<T> {
     /// # Examples
     ///
     /// ```
-    /// # kayrx::karx::task::block_on(async {
+    /// # kayrx::karx::exec(async {
     /// #
     /// use kayr::sync::RwLock;
     ///
@@ -165,7 +165,7 @@ impl<T: ?Sized> RwLock<T> {
     /// # Examples
     ///
     /// ```
-    /// # kayrx::karx::task::block_on(async {
+    /// # kayrx::karx::exec(async {
     /// #
     /// use kayrx::sync::RwLock;
     ///
@@ -212,7 +212,7 @@ impl<T: ?Sized> RwLock<T> {
     /// # Examples
     ///
     /// ```
-    /// # kayrx::karx::task::block_on(async {
+    /// # kayrx::karx::exec(async {
     /// #
     /// use kayrx::sync::RwLock;
     ///
@@ -287,7 +287,7 @@ impl<T: ?Sized> RwLock<T> {
     /// # Examples
     ///
     /// ```
-    /// # kayrx::karx::task::block_on(async {
+    /// # kayrx::karx::exec(async {
     /// #
     /// use kayrx::sync::RwLock;
     ///
@@ -330,7 +330,7 @@ impl<T: ?Sized> RwLock<T> {
     /// # Examples
     ///
     /// ```
-    /// # kayrx::karx::task::block_on(async {
+    /// # kayrx::karx::exec(async {
     /// #
     /// use kayrx::sync::RwLock;
     ///

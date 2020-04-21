@@ -14,9 +14,9 @@ use super::utils::abort_on_panic;
 /// is useful to prevent long-running synchronous operations from blocking the main futures
 /// executor.
 ///
-/// See also: [`karx::block_on`], [`karx::spawn`].
+/// See also: [`karx::exec`], [`karx::spawn`].
 ///
-/// [`karx::block_on`]: fn.block_on.html
+/// [`karx::exec`]: fn.exec.html
 /// [`karx::spawn`]: fn.spawn.html
 ///
 /// # Examples
@@ -24,11 +24,11 @@ use super::utils::abort_on_panic;
 /// Basic usage:
 ///
 /// ```
-/// # kayrx::karx::block_on(async {
+/// # kayrx::karx::exec(async {
 /// #
-/// use kayrx::karx::task;
+/// use kayrx::karx;
 ///
-/// task::spawn_blocking(|| {
+/// karx::block(|| {
 ///     println!("long-running task here");
 /// })
 /// .await;
@@ -36,7 +36,7 @@ use super::utils::abort_on_panic;
 /// # })
 /// ```
 #[inline]
-pub fn spawn_blocking<F, T>(f: F) -> JoinKarx<T>
+pub fn block<F, T>(f: F) -> JoinKarx<T>
 where
     F: FnOnce() -> T + Send + 'static,
     T: Send + 'static,

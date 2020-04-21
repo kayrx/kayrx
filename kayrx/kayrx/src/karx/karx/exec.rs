@@ -14,9 +14,9 @@ use super::Karx;
 /// Calling this function is similar to [spawning] a thread and immediately [joining] it, except an
 /// asynchronous karx will be spawned.
 ///
-/// See also: [`karx::spawn_blocking`].
+/// See also: [`karx::block`].
 ///
-/// [`karx::spawn_blocking`]: fn.spawn_blocking.html
+/// [`karx::block`]: fn.block.html
 ///
 /// [spawning]: https://doc.rust-lang.org/std/thread/fn.spawn.html
 /// [joining]: https://doc.rust-lang.org/std/thread/struct.JoinHandle.html#method.join
@@ -27,12 +27,12 @@ use super::Karx;
 /// use kayrx::karx;
 ///
 /// fn main() {
-///     karx::block_on(async {
+///     karx::exec(async {
 ///         println!("Hello, world!");
 ///     })
 /// }
 /// ```
-pub fn block_on<F, T>(future: F) -> T
+pub fn exec<F, T>(future: F) -> T
 where
     F: Future<Output = T>,
 {

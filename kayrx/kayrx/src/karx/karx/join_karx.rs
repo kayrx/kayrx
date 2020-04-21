@@ -26,7 +26,7 @@ impl<T> JoinKarx<T> {
     /// # Examples
     ///
     /// ```
-    /// # kayrx::karx::block_on(async {
+    /// # kayrx::karx::exec(async {
     /// #
     /// use kayrx::karx::task;
     ///
