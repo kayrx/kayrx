@@ -3,15 +3,14 @@ use std::io::{Read, Write};
 use std::net::{self, SocketAddr};
 use std::os::unix::io::{RawFd, FromRawFd, IntoRawFd, AsRawFd};
 use std::time::Duration;
-
 use libc;
 use net2::TcpStreamExt;
 use iovec::IoVec;
 use std::io;
 
-use crate::lxio::{Ready, Poll, PollOpt, Token};
-use crate::lxio::event::{Evented, EventedFd};
-use crate::lxio::sys::io::{VecIo, set_nonblock};
+use crate::lxar::{Poll, Token};
+use crate::lxar::event::{Ready, Evented, PollOpt, EventedFd};
+use crate::lxar::sys::io::{VecIo, set_nonblock};
 
 pub struct TcpStream {
     inner: net::TcpStream,

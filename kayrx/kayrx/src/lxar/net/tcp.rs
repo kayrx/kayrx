@@ -11,14 +11,15 @@ use std::fmt;
 use std::io::{Read, Write};
 use std::net::{self, SocketAddr, SocketAddrV4, SocketAddrV6, Ipv4Addr, Ipv6Addr};
 use std::time::Duration;
+use std::net::Shutdown;
 
 use net2::TcpBuilder;
 use iovec::IoVec;
 use std::io;
 
-use crate::lxio::{sys, Ready, Poll, PollOpt, Token};
-use crate::lxio::event::Evented;
-use crate::lxio::poll::SelectorId;
+use crate::lxar::{sys, Poll, Token};
+use crate::lxar::event::{Evented, Ready, PollOpt};
+use crate::lxar::poll::SelectorId;
 
 /*
  *
@@ -65,8 +66,6 @@ pub struct TcpStream {
     sys: sys::TcpStream,
     selector_id: SelectorId,
 }
-
-use std::net::Shutdown;
 
 fn set_nonblocking(stream: &net::TcpStream) -> io::Result<()> {
     stream.set_nonblocking(true)

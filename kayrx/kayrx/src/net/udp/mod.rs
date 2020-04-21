@@ -1,4 +1,4 @@
-//! Async UDP bindings.
+//! A UDP socket.
 //!
 //! This module contains the UDP networking types, similar to those found in
 //! `std::net`, but suitable for async programming via futures and
@@ -16,18 +16,17 @@ use std::io;
 use std::net::{Ipv4Addr, Ipv6Addr, SocketAddr};
 use std::pin::Pin;
 use std::task::{Context, Poll};
-
 use async_datagram::AsyncDatagram;
 use async_ready::{AsyncReadReady, AsyncWriteReady};
 use futures_core::Future;
 use futures_util::ready;
-use crate::lxio;
 
-use crate::reactor::PollEvented;
+use crate::lxar;
+use crate::net::reactor::PollEvented;
 
 /// A UDP socket.
 pub struct UdpSocket {
-    io: PollEvented<lxio::net::UdpSocket>,
+    io: PollEvented<lxar::net::UdpSocket>,
 }
 
 impl UdpSocket {
@@ -42,7 +41,7 @@ impl UdpSocket {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use rolxio::udp::UdpSocket;
+    /// use rolxar::udp::UdpSocket;
     ///
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let socket_addr = "127.0.0.1:0".parse()?;
@@ -51,10 +50,10 @@ impl UdpSocket {
     /// # }
     /// ```
     pub fn bind(addr: &SocketAddr) -> io::Result<UdpSocket> {
-        lxio::net::UdpSocket::bind(addr).map(UdpSocket::new)
+        lxar::net::UdpSocket::bind(addr).map(UdpSocket::new)
     }
 
-    fn new(socket: lxio::net::UdpSocket) -> UdpSocket {
+    fn new(socket: lxar::net::UdpSocket) -> UdpSocket {
         let io = PollEvented::new(socket);
         UdpSocket { io: io }
     }
@@ -67,7 +66,7 @@ impl UdpSocket {
     /// # Examples
     ///
     /// ```rust
-    ///	use rolxio::udp::UdpSocket;
+    ///	use rolxar::udp::UdpSocket;
     ///
     ///	# fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// # let socket_addr = "127.0.0.1:0".parse()?;
@@ -87,7 +86,7 @@ impl UdpSocket {
     ///
     /// ```rust,no_run
     /// # use std::error::Error;
-    /// use rolxio::udp::UdpSocket;
+    /// use rolxar::udp::UdpSocket;
     ///
     /// const THE_MERCHANT_OF_VENICE: &[u8] = b"
     ///     If you prick us, do we not bleed?
@@ -120,7 +119,7 @@ impl UdpSocket {
     ///
     /// ```rust,no_run
     /// # use std::error::Error;
-    /// use rolxio::udp::UdpSocket;
+    /// use rolxar::udp::UdpSocket;
     ///
     /// # async fn recv_data() -> Result<Vec<u8>, Box<dyn Error + 'static>> {
     /// let addr = "127.0.0.1:0".parse()?;
@@ -242,7 +241,7 @@ impl UdpSocket {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use rolxio::udp::UdpSocket;
+    /// use rolxar::udp::UdpSocket;
     /// use std::net::Ipv4Addr;
     ///
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -267,7 +266,7 @@ impl UdpSocket {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use rolxio::udp::UdpSocket;
+    /// use rolxar::udp::UdpSocket;
     /// use std::net::{Ipv6Addr, SocketAddr};
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let socket_addr = SocketAddr::new(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 0).into(), 0);
@@ -345,7 +344,7 @@ impl AsyncReadReady for UdpSocket
 where
     Self: Unpin,
 {
-    type Ok = lxio::Ready;
+    type Ok = lxar::event::Ready;
     type Err = io::Error;
 
     /// Check the UDP socket's read readiness state.
@@ -364,7 +363,7 @@ where
 }
 
 impl AsyncWriteReady for UdpSocket {
-    type Ok = lxio::Ready;
+    type Ok = lxar::event::Ready;
     type Err = io::Error;
 
     /// Check the UDP socket's write readiness state.

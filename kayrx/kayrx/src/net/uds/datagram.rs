@@ -1,10 +1,8 @@
-use crate::reactor::PollEvented;
+//! Unix datagram socket
 
 use async_datagram::AsyncDatagram;
 use async_ready::{AsyncReadReady, AsyncWriteReady, TakeError};
 use futures_util::ready;
-use crate::lxio;
-
 use std::fmt;
 use std::io;
 use std::net::Shutdown;
@@ -15,9 +13,12 @@ use std::pin::Pin;
 use std::task::{Context, Poll};
 use std::future::Future;
 
+use crate::lxar;
+use crate::net::reactor::PollEvented;
+
 /// An I/O object representing a Unix datagram socket.
 pub struct UnixDatagram {
-    io: PollEvented<lxio::net::UnixDatagram>,
+    io: PollEvented<lxar::net::UnixDatagram>,
 }
 
 /// The future returned by `UnixDatagram::send_to`.
@@ -63,14 +64,14 @@ impl UnixDatagram {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use rolxio::uds::UnixDatagram;
+    /// use rolxar::uds::UnixDatagram;
     ///
     /// # fn run() -> std::io::Result<()> {
     /// let sock = UnixDatagram::bind("/tmp/sock")?;
     /// # Ok(()) }
     /// ```
     pub fn bind(path: impl AsRef<Path>) -> io::Result<UnixDatagram> {
-        let socket = lxio::net::UnixDatagram::bind(path)?;
+        let socket = lxar::net::UnixDatagram::bind(path)?;
         Ok(UnixDatagram::new(socket))
     }
 
@@ -83,21 +84,21 @@ impl UnixDatagram {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use rolxio::uds::UnixDatagram;
+    /// use rolxar::uds::UnixDatagram;
     ///
     /// # fn run() -> std::io::Result<()> {
     /// let (sock1, sock2) = UnixDatagram::pair()?;
     /// # Ok(()) }
     /// ```
     pub fn pair() -> io::Result<(UnixDatagram, UnixDatagram)> {
-        let (a, b) = lxio::net::UnixDatagram::pair()?;
+        let (a, b) = lxar::net::UnixDatagram::pair()?;
         let a = UnixDatagram::new(a);
         let b = UnixDatagram::new(b);
 
         Ok((a, b))
     }
 
-    fn new(socket: lxio::net::UnixDatagram) -> UnixDatagram {
+    fn new(socket: lxar::net::UnixDatagram) -> UnixDatagram {
         let io = PollEvented::new(socket);
         UnixDatagram { io }
     }
@@ -107,14 +108,14 @@ impl UnixDatagram {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use rolxio::uds::UnixDatagram;
+    /// use rolxar::uds::UnixDatagram;
     ///
     /// # fn run() -> std::io::Result<()> {
     /// let sock = UnixDatagram::unbound()?;
     /// # Ok(()) }
     /// ```
     pub fn unbound() -> io::Result<UnixDatagram> {
-        let socket = lxio::net::UnixDatagram::unbound()?;
+        let socket = lxar::net::UnixDatagram::unbound()?;
         Ok(UnixDatagram::new(socket))
     }
 
@@ -122,7 +123,7 @@ impl UnixDatagram {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use rolxio::uds::UnixDatagram;
+    /// use rolxar::uds::UnixDatagram;
     ///
     /// # fn run() -> std::io::Result<()> {
     /// let stream = UnixDatagram::bind("/tmp/sock")?;
@@ -140,7 +141,7 @@ impl UnixDatagram {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use rolxio::uds::UnixDatagram;
+    /// use rolxar::uds::UnixDatagram;
     ///
     /// # fn run() -> std::io::Result<()> {
     /// let stream = UnixDatagram::bind("/tmp/sock")?;
@@ -160,7 +161,7 @@ impl UnixDatagram {
     /// ## Examples
     ///
     /// ```rust
-    /// use rolxio::uds::UnixDatagram;
+    /// use rolxar::uds::UnixDatagram;
     /// use std::net::Shutdown;
     ///
     /// # fn run () -> Result<(), Box<dyn std::error::Error + 'static>> {
@@ -179,7 +180,7 @@ impl UnixDatagram {
     ///
     /// ```no_run
     /// # use std::error::Error;
-    /// use rolxio::udp::UdpSocket;
+    /// use rolxar::udp::UdpSocket;
     ///
     /// const THE_MERCHANT_OF_VENICE: &[u8] = b"
     ///     If you prick us, do we not bleed?
@@ -212,7 +213,7 @@ impl UnixDatagram {
     ///
     /// ```no_run
     /// # use std::error::Error;
-    /// use rolxio::udp::UdpSocket;
+    /// use rolxar::udp::UdpSocket;
     ///
     /// # async fn recv_data() -> Result<Vec<u8>, Box<dyn Error + 'static>> {
     /// let addr = "/tmp/in.socket".parse()?;
@@ -270,7 +271,7 @@ impl AsyncDatagram for UnixDatagram {
 }
 
 impl AsyncReadReady for UnixDatagram {
-    type Ok = lxio::Ready;
+    type Ok = lxar::event::Ready;
     type Err = io::Error;
 
     /// Test whether this socket is ready to be read or not.
@@ -283,7 +284,7 @@ impl AsyncReadReady for UnixDatagram {
 }
 
 impl AsyncWriteReady for UnixDatagram {
-    type Ok = lxio::Ready;
+    type Ok = lxar::event::Ready;
     type Err = io::Error;
 
     /// Test whether this socket is ready to be written to or not.
@@ -304,8 +305,8 @@ impl TakeError for UnixDatagram {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use rolxio::reactor::TakeError;
-    /// use rolxio::uds::UnixDatagram;
+    /// use rolxar::reactor::TakeError;
+    /// use rolxar::uds::UnixDatagram;
     ///
     /// # fn run() -> std::io::Result<()> {
     /// let stream = UnixDatagram::bind("/tmp/sock")?;

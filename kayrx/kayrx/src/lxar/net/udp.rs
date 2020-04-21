@@ -7,14 +7,14 @@
 //!
 /// [portability guidelines]: ../struct.Poll.html#portability
 
-use crate::lxio::{sys, Ready, Poll, PollOpt, Token};
-use crate::lxio::event::Evented;
-use crate::lxio::poll::SelectorId;
 use std::fmt;
 use std::net::{self, Ipv4Addr, Ipv6Addr, SocketAddr};
-
 use iovec::IoVec;
 use std::io;
+
+use crate::lxar::{sys, Poll, Token};
+use crate::lxar::event::{Evented, Ready, PollOpt};
+use crate::lxar::poll::SelectorId;
 
 /// A User Datagram Protocol socket.
 ///

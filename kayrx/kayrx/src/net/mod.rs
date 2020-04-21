@@ -49,12 +49,15 @@
 //! }
 //! ```
 
-pub mod tcp;
-pub mod udp;
-
+mod tcp;
+mod udp;
 pub mod uds;
+
+pub(in crate::net)  mod reactor;
 
 #[doc(inline)]
 pub use crate::net::tcp::{TcpListener, TcpStream};
 #[doc(inline)]
 pub use crate::net::udp::UdpSocket;
+#[doc(inline)]
+pub use crate::net::uds::{UnixDatagram, UnixListener, UnixStream};

@@ -1,4 +1,4 @@
-use crate::lxio::event::{Ready, ready_as_usize, ready_from_usize};
+use crate::lxar::event::{Ready, ready_as_usize, ready_from_usize};
 
 use std::ops;
 use std::fmt;

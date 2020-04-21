@@ -1,3 +1,5 @@
+//! A TCP stream between a local and a remote socket.
+
 use std::fmt;
 use std::io;
 use std::mem;
@@ -9,9 +11,9 @@ use std::time::Duration;
 use async_ready::{AsyncReadReady, AsyncWriteReady};
 use futures_io::{AsyncRead, AsyncWrite};
 use futures_core::Future;
-use crate::lxio;
 
-use crate::reactor::PollEvented;
+use crate::lxar;
+use crate::net::reactor::PollEvented;
 
 /// A TCP stream between a local and a remote socket.
 ///
@@ -28,7 +30,7 @@ use crate::reactor::PollEvented;
 /// [accepting]: struct.TcpListener.html#method.accept
 /// [listener]: struct.TcpListener.html
 pub struct TcpStream {
-    io: PollEvented<lxio::net::TcpStream>,
+    io: PollEvented<lxar::net::TcpStream>,
 }
 
 /// The future returned by `TcpStream::connect`, which will resolve to a `TcpStream`
@@ -61,7 +63,7 @@ impl TcpStream {
     ///
     /// ```no_run
     /// # use std::io;
-    /// use rolxio::tcp::TcpStream;
+    /// use rolxar::tcp::TcpStream;
     ///
     /// # async fn connect_localhost() -> io::Result<TcpStream> {
     /// let addr = "127.0.0.1".parse().unwrap();
@@ -71,7 +73,7 @@ impl TcpStream {
     pub fn connect(addr: &SocketAddr) -> ConnectFuture {
         use self::ConnectFutureState::*;
 
-        let inner = match lxio::net::TcpStream::connect(addr) {
+        let inner = match lxar::net::TcpStream::connect(addr) {
             Ok(tcp) => Waiting(TcpStream::new(tcp)),
             Err(e) => Error(e),
         };
@@ -79,7 +81,7 @@ impl TcpStream {
         ConnectFuture { inner }
     }
 
-    pub(crate) fn new(connected: lxio::net::TcpStream) -> TcpStream {
+    pub(crate) fn new(connected: lxar::net::TcpStream) -> TcpStream {
         let io = PollEvented::new(connected);
         TcpStream { io }
     }
@@ -89,7 +91,7 @@ impl TcpStream {
     /// # Examples
     ///
     /// ```rust
-    /// use rolxio::tcp::TcpStream;
+    /// use rolxar::tcp::TcpStream;
     /// use std::net::{IpAddr, Ipv4Addr};
     ///
     /// # async fn run () -> Result<(), Box<dyn std::error::Error + 'static>> {
@@ -109,7 +111,7 @@ impl TcpStream {
     /// # Examples
     ///
     /// ```rust
-    /// use rolxio::tcp::TcpStream;
+    /// use rolxar::tcp::TcpStream;
     /// use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
     ///
     /// # async fn run () -> Result<(), Box<dyn std::error::Error + 'static>> {
@@ -133,7 +135,7 @@ impl TcpStream {
     /// # Examples
     ///
     /// ```rust
-    /// use rolxio::tcp::TcpStream;
+    /// use rolxar::tcp::TcpStream;
     /// use std::net::Shutdown;
     ///
     /// # async fn run () -> Result<(), Box<dyn std::error::Error + 'static>> {
@@ -156,7 +158,7 @@ impl TcpStream {
     /// # Examples
     ///
     /// ```rust
-    /// use rolxio::tcp::TcpStream;
+    /// use rolxar::tcp::TcpStream;
     ///
     /// # async fn run () -> Result<(), Box<dyn std::error::Error + 'static>> {
     /// let addr = "127.0.0.1:8080".parse()?;
@@ -181,7 +183,7 @@ impl TcpStream {
     /// # Examples
     ///
     /// ```rust
-    /// use rolxio::tcp::TcpStream;
+    /// use rolxar::tcp::TcpStream;
     ///
     /// # async fn run () -> Result<(), Box<dyn std::error::Error + 'static>> {
     /// let addr = "127.0.0.1:8080".parse()?;
@@ -203,7 +205,7 @@ impl TcpStream {
     /// # Examples
     ///
     /// ```rust
-    /// use rolxio::tcp::TcpStream;
+    /// use rolxar::tcp::TcpStream;
     ///
     /// # async fn run () -> Result<(), Box<dyn std::error::Error + 'static>> {
     /// let addr = "127.0.0.1:8080".parse()?;
@@ -225,7 +227,7 @@ impl TcpStream {
     /// # Examples
     ///
     /// ```rust
-    /// use rolxio::tcp::TcpStream;
+    /// use rolxar::tcp::TcpStream;
     ///
     /// # async fn run () -> Result<(), Box<dyn std::error::Error + 'static>> {
     /// let addr = "127.0.0.1:8080".parse()?;
@@ -247,7 +249,7 @@ impl TcpStream {
     /// # Examples
     ///
     /// ```rust
-    /// use rolxio::tcp::TcpStream;
+    /// use rolxar::tcp::TcpStream;
     ///
     /// # async fn run () -> Result<(), Box<dyn std::error::Error + 'static>> {
     /// let addr = "127.0.0.1:8080".parse()?;
@@ -269,7 +271,7 @@ impl TcpStream {
     /// # Examples
     ///
     /// ```rust
-    /// use rolxio::tcp::TcpStream;
+    /// use rolxar::tcp::TcpStream;
     ///
     /// # async fn run () -> Result<(), Box<dyn std::error::Error + 'static>> {
     /// let addr = "127.0.0.1:8080".parse()?;
@@ -292,7 +294,7 @@ impl TcpStream {
     /// # Examples
     ///
     /// ```rust
-    /// use rolxio::tcp::TcpStream;
+    /// use rolxar::tcp::TcpStream;
     /// use std::time::Duration;
     ///
     /// # async fn run () -> Result<(), Box<dyn std::error::Error + 'static>> {
@@ -323,7 +325,7 @@ impl TcpStream {
     /// # Examples
     ///
     /// ```rust
-    /// use rolxio::tcp::TcpStream;
+    /// use rolxar::tcp::TcpStream;
     /// use std::time::Duration;
     ///
     /// # async fn run () -> Result<(), Box<dyn std::error::Error + 'static>> {
@@ -346,7 +348,7 @@ impl TcpStream {
     /// # Examples
     ///
     /// ```rust
-    /// use rolxio::tcp::TcpStream;
+    /// use rolxar::tcp::TcpStream;
     ///
     /// # async fn run () -> Result<(), Box<dyn std::error::Error + 'static>> {
     /// let addr = "127.0.0.1:8080".parse()?;
@@ -368,7 +370,7 @@ impl TcpStream {
     /// # Examples
     ///
     /// ```rust
-    /// use rolxio::tcp::TcpStream;
+    /// use rolxar::tcp::TcpStream;
     ///
     /// # async fn run () -> Result<(), Box<dyn std::error::Error + 'static>> {
     /// let addr = "127.0.0.1:8080".parse()?;
@@ -391,7 +393,7 @@ impl TcpStream {
     /// # Examples
     ///
     /// ```rust
-    /// use rolxio::tcp::TcpStream;
+    /// use rolxar::tcp::TcpStream;
     /// use std::time::Duration;
     ///
     /// # async fn run () -> Result<(), Box<dyn std::error::Error + 'static>> {
@@ -421,7 +423,7 @@ impl TcpStream {
     /// # Examples
     ///
     /// ```rust
-    /// use rolxio::tcp::TcpStream;
+    /// use rolxar::tcp::TcpStream;
     /// use std::time::Duration;
     ///
     /// # async fn run () -> Result<(), Box<dyn std::error::Error + 'static>> {
@@ -465,7 +467,7 @@ impl AsyncWrite for TcpStream {
 }
 
 impl AsyncReadReady for TcpStream {
-    type Ok = lxio::Ready;
+    type Ok = lxar::event::Ready;
     type Err = io::Error;
 
     /// Poll the TCP stream's readiness for reading.
@@ -484,7 +486,7 @@ impl AsyncReadReady for TcpStream {
 }
 
 impl AsyncWriteReady for TcpStream {
-    type Ok = lxio::Ready;
+    type Ok = lxar::event::Ready;
     type Err = io::Error;
 
     /// Check the TCP stream's write readiness state.
@@ -548,7 +550,7 @@ impl std::convert::TryFrom<std::net::TcpStream> for TcpStream {
     type Error = io::Error;
 
     fn try_from(stream: std::net::TcpStream) -> Result<Self, Self::Error> {
-        let tcp = lxio::net::TcpStream::from_stream(stream)?;
+        let tcp = lxar::net::TcpStream::from_stream(stream)?;
         Ok(TcpStream::new(tcp))
     }
 }
@@ -557,7 +559,7 @@ impl std::convert::TryFrom<&std::net::SocketAddr> for TcpStream {
     type Error = io::Error;
 
     fn try_from(addr: &std::net::SocketAddr) -> Result<Self, Self::Error> {
-        let tcp = lxio::net::TcpStream::connect(&addr)?;
+        let tcp = lxar::net::TcpStream::connect(&addr)?;
         Ok(TcpStream::new(tcp))
     }
 }

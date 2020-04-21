@@ -1,6 +1,6 @@
 [package]
 name = "kayrx"
-version = "0.16.5"
+version = "0.17.0"
 authors = ["krircc <krircc@qq.com>"]
 documentation = "https://docs.rs/kayrx/"
 repository = "https://github.com/kayrx/kayrx"
@@ -33,7 +33,7 @@ once_cell = "1.3.1"
 pin-project-lite = "0.1.4"
 pin-utils = "0.1.0-alpha.4"
 slab = "0.4.2"
-# lxio
+# lxar
 net2 = "0.2"
 iovec = "0.1.4"
 # net, reactor

@@ -1,30 +1,29 @@
-use super::TcpStream;
-
 use std::fmt;
 use std::io;
 use std::net::{self, SocketAddr};
 use std::pin::Pin;
 use std::task::{Context, Poll};
-
 use async_ready::AsyncReady;
 use futures_core::stream::Stream;
 use futures_util::ready;
-use crate::lxio;
 
-use crate::reactor::PollEvented;
+use super::TcpStream;
+use crate::lxar;
+use crate::net::reactor::PollEvented;
 
+/// A TCP socket server, listening for connections.
 pub struct TcpListener {
-    io: PollEvented<lxio::net::TcpListener>,
+    io: PollEvented<lxar::net::TcpListener>,
 }
 
 impl TcpListener {
 
     pub fn bind(addr: &SocketAddr) -> io::Result<TcpListener> {
-        let l = lxio::net::TcpListener::bind(addr)?;
+        let l = lxar::net::TcpListener::bind(addr)?;
         Ok(TcpListener::new(l))
     }
 
-    fn new(listener: lxio::net::TcpListener) -> TcpListener {
+    fn new(listener: lxar::net::TcpListener) -> TcpListener {
         let io = PollEvented::new(listener);
         TcpListener { io }
     }
@@ -69,7 +68,7 @@ impl AsyncReady for TcpListener {
     /// Check if the stream can be read from.
     fn poll_ready(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<Self::Ok, Self::Err>> {
         let (io, addr) = ready!(self.poll_accept_std(cx)?);
-        let io = lxio::net::TcpStream::from_stream(io)?;
+        let io = lxar::net::TcpStream::from_stream(io)?;
         let io = TcpStream::new(io);
         Poll::Ready(Ok((io, addr)))
     }

@@ -1,12 +1,14 @@
-use crate::lxio::{sys, poll, Poll, Token};
+//! Readiness event types and Utility
+
 use std::os::unix::io::RawFd;
 use std::{fmt, io, ops};
 
 pub use super::poll::{Events, Iter};
+use crate::lxar::{sys, poll, Poll, Token};
 
 /// A value that may be registered with `Poll`
 ///
-/// Values that implement `Evented` can be registered with `Poll`. Users of Mio
+/// Values that implement `Evented` can be registered with `Poll`. Users of lxar
 /// should not use the `Evented` trait functions directly. Instead, the
 /// equivalent functions on `Poll` should be used.
 ///
@@ -1199,7 +1201,6 @@ pub fn opt_from_usize(opt: usize) -> PollOpt {
 }
 
 // Used internally to mutate an `Event` in place
-// Not used on all platforms
 #[allow(dead_code)]
 pub fn kind_mut(event: &mut Event) -> &mut Ready {
     &mut event.kind

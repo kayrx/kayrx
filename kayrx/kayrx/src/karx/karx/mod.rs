@@ -1,8 +1,7 @@
-//! Karx async execute engine
-
 #[macro_use]
 pub(crate) mod utils;
 pub mod task {
+    //! Asynchronous green-threads.
     pub use super::kernel::*;
 }
 

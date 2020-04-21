@@ -5,15 +5,14 @@ use std::sync::atomic::{AtomicUsize, Ordering, ATOMIC_USIZE_INIT};
 use std::time::Duration;
 use std::{cmp, i32};
 use std::io;
-
 use libc::{self, c_int};
 use libc::{EPOLLERR, EPOLLHUP, EPOLLONESHOT};
 use libc::{EPOLLET, EPOLLOUT, EPOLLIN, EPOLLPRI};
 
-use crate::lxio::{Ready, PollOpt, Token};
-use crate::lxio::event::Event;
-use crate::lxio::sys::{cvt, UnixReady};
-use crate::lxio::sys::io::set_cloexec;
+use crate::lxar::Token;
+use crate::lxar::event::{Ready, PollOpt, Event};
+use crate::lxar::sys::{cvt, UnixReady};
+use crate::lxar::sys::io::set_cloexec;
 
 /// Each Selector has a globally unique(ish) ID associated with it. This ID
 /// gets tracked by `TcpStream`, `TcpListener`, etc... when they are first

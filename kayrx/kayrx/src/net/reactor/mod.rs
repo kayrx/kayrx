@@ -22,7 +22,7 @@ use slab::Slab;
 
 use self::sharded_rwlock::RwLock;
 use self::background::Background;
-use crate::lxio::{self, event::Evented};
+use crate::lxar::{self, event::Evented};
 
 /// The kayrx reactor,  event loop.
 ///
@@ -31,13 +31,13 @@ use crate::lxio::{self, event::Evented};
 /// multiple handles pointing to it, each of which can then be used to create
 /// various I/O objects to interact with the event loop in interesting ways.
 struct Reactor {
-    /// Reuse the `lxio::Events` value across calls to poll.
-    events: lxio::Events,
+    /// Reuse the `lxar::event::Events` value across calls to poll.
+    events: lxar::event::Events,
 
     /// State shared between the reactor and the handles.
     inner: Arc<Inner>,
 
-    _wakeup_registration: lxio::Registration,
+    _wakeup_registration: lxar::Registration,
 }
 
 /// A reference to a reactor.
@@ -76,7 +76,7 @@ fn test_handle_size() {
 
 struct Inner {
     /// The underlying system event queue.
-    io: lxio::Poll,
+    io: lxar::Poll,
 
     /// ABA guard counter
     next_aba_guard: AtomicUsize,
@@ -85,7 +85,7 @@ struct Inner {
     io_dispatch: RwLock<Slab<ScheduledIo>>,
 
     /// Used to wake up the reactor from a call to `turn`
-    wakeup: lxio::SetReadiness,
+    wakeup: lxar::SetReadiness,
 }
 
 struct ScheduledIo {
@@ -111,7 +111,7 @@ const TOKEN_SHIFT: usize = 22;
 
 // Kind of arbitrary, but this reserves some token space for later usage.
 const MAX_SOURCES: usize = (1 << TOKEN_SHIFT) - 1;
-const TOKEN_WAKEUP: lxio::Token = lxio::Token(MAX_SOURCES);
+const TOKEN_WAKEUP: lxar::Token = lxar::Token(MAX_SOURCES);
 
 fn _assert_kinds() {
     fn _assert<T: Send + Sync>() {}
@@ -125,18 +125,18 @@ impl Reactor {
     /// Creates a new event loop, returning any error that happened during the
     /// creation.
     fn new() -> io::Result<Reactor> {
-        let io = lxio::Poll::new()?;
-        let wakeup_pair = lxio::Registration::new2();
+        let io = lxar::Poll::new()?;
+        let wakeup_pair = lxar::Registration::new2();
 
         io.register(
             &wakeup_pair.0,
             TOKEN_WAKEUP,
-            lxio::Ready::readable(),
-            lxio::PollOpt::level(),
+            lxar::event::Ready::readable(),
+            lxar::event::PollOpt::level(),
         )?;
 
         Ok(Reactor {
-            events: lxio::Events::with_capacity(1024),
+            events: lxar::event::Events::with_capacity(1024),
             _wakeup_registration: wakeup_pair.0,
             inner: Arc::new(Inner {
                 io: io,
@@ -233,7 +233,7 @@ impl Reactor {
             if token == TOKEN_WAKEUP {
                 self.inner
                     .wakeup
-                    .set_readiness(lxio::Ready::empty())
+                    .set_readiness(lxar::event::Ready::empty())
                     .unwrap();
             } else {
                 self.dispatch(token, event.readiness());
@@ -253,7 +253,7 @@ impl Reactor {
         Ok(())
     }
 
-    fn dispatch(&self, token: lxio::Token, ready: lxio::Ready) {
+    fn dispatch(&self, token: lxar::Token, ready: lxar::event::Ready) {
         let aba_guard = token.0 & !MAX_SOURCES;
         let token = token.0 & MAX_SOURCES;
 
@@ -280,7 +280,7 @@ impl Reactor {
                 wr = io.writer.take();
             }
 
-            if !(ready & (!lxio::Ready::writable())).is_empty() {
+            if !(ready & (!lxar::event::Ready::writable())).is_empty() {
                 rd = io.reader.take();
             }
         }
@@ -430,7 +430,7 @@ impl HandlePriv {
     /// return immediately.
     fn wakeup(&self) {
         if let Some(inner) = self.inner() {
-            inner.wakeup.set_readiness(lxio::Ready::readable()).unwrap();
+            inner.wakeup.set_readiness(lxar::event::Ready::readable()).unwrap();
         }
     }
 
@@ -484,9 +484,9 @@ impl Inner {
 
         self.io.register(
             source,
-            lxio::Token(aba_guard | key),
-            lxio::Ready::all(),
-            lxio::PollOpt::edge(),
+            lxar::Token(aba_guard | key),
+            lxar::event::Ready::all(),
+            lxar::event::PollOpt::edge(),
         )?;
 
         Ok(key)
@@ -509,8 +509,8 @@ impl Inner {
         let sched = io_dispatch.get(token).unwrap();
 
         let (atomic_waker, ready) = match dir {
-            Direction::Read => (&sched.reader, !lxio::Ready::writable()),
-            Direction::Write => (&sched.writer, lxio::Ready::writable()),
+            Direction::Read => (&sched.reader, !lxar::event::Ready::writable()),
+            Direction::Write => (&sched.writer, lxar::event::Ready::writable()),
         };
 
         atomic_waker.register(&cx.waker());
@@ -535,20 +535,20 @@ impl Drop for Inner {
 }
 
 impl Direction {
-    fn mask(&self) -> lxio::Ready {
+    fn mask(&self) -> lxar::event::Ready {
         match *self {
             Direction::Read => {
                 // Everything except writable is signaled through read.
-                lxio::Ready::all() - lxio::Ready::writable()
+                lxar::event::Ready::all() - lxar::event::Ready::writable()
             }
-            Direction::Write => lxio::Ready::writable() | platform::hup(),
+            Direction::Write => lxar::event::Ready::writable() | platform::hup(),
         }
     }
 }
 
 pub(crate) mod platform {
-    use crate::lxio::UnixReady;
-    use crate::lxio::Ready;
+    use crate::lxar::UnixReady;
+    use crate::lxar::event::Ready;
 
     pub fn hup() -> Ready {
         UnixReady::hup().into()

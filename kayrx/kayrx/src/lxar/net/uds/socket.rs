@@ -3,7 +3,6 @@ use std::io;
 use std::mem;
 use std::os::unix::prelude::*;
 use std::path::Path;
-
 use libc::{self, c_int, c_ulong};
 
 use super::cvt;

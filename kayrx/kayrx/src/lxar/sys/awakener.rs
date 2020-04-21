@@ -2,9 +2,9 @@ pub use self::pipe::Awakener;
 
 /// Default awakener backed by a pipe
 mod pipe {
-    use crate::lxio::sys;
-    use crate::lxio::{Ready, Poll, PollOpt, Token};
-    use crate::lxio::event::Evented;
+    use crate::lxar::sys;
+    use crate::lxar::{Poll, Token};
+    use crate::lxar::event::{ Ready, Evented, PollOpt};
     use std::io::{self, Read, Write};
 
     /*

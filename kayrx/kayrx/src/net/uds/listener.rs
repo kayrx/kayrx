@@ -1,12 +1,6 @@
-use super::UnixStream;
-
-use crate::reactor::PollEvented;
-
 use async_ready::{AsyncReady, TakeError};
 use futures_util::ready;
 use futures_core::Stream;
-use crate::lxio;
-
 use std::fmt;
 use std::io;
 use std::os::unix::io::{AsRawFd, RawFd};
@@ -15,14 +9,19 @@ use std::path::Path;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
+use super::UnixStream;
+use crate::lxar;
+use crate::net::reactor::PollEvented;
+
+/// A Unix socket cna accept connections from other Unix sockets.
 pub struct UnixListener {
-    io: PollEvented<lxio::net::UnixListener>,
+    io: PollEvented<lxar::net::UnixListener>,
 }
 
 impl UnixListener {
 
     pub fn bind(path: impl AsRef<Path>) -> io::Result<UnixListener> {
-        let listener = lxio::net::UnixListener::bind(path)?;
+        let listener = lxar::net::UnixListener::bind(path)?;
         let io = PollEvented::new(listener);
         Ok(UnixListener { io })
     }
@@ -63,7 +62,7 @@ impl AsyncReady for UnixListener {
     /// Check if the stream can be read from.
     fn poll_ready(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<Self::Ok, Self::Err>> {
         let (io, addr) = ready!(self.poll_accept_std(cx)?);
-        let io = lxio::net::UnixStream::from_stream(io)?;
+        let io = lxar::net::UnixStream::from_stream(io)?;
         Poll::Ready(Ok((UnixStream::new(io), addr)))
     }
 }

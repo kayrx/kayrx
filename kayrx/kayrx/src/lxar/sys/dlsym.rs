@@ -6,8 +6,8 @@ use libc;
 macro_rules! dlsym {
     (fn $name:ident($($t:ty),*) -> $ret:ty) => (
         #[allow(bad_style)]
-        static $name: crate::lxio::sys::dlsym::DlSym<unsafe extern fn($($t),*) -> $ret> =
-        crate::lxio::sys::dlsym::DlSym {
+        static $name: crate::lxar::sys::dlsym::DlSym<unsafe extern fn($($t),*) -> $ret> =
+        crate::lxar::sys::dlsym::DlSym {
                 name: concat!(stringify!($name), "\0"),
                 addr: ::std::sync::atomic::ATOMIC_USIZE_INIT,
                 _marker: ::std::marker::PhantomData,

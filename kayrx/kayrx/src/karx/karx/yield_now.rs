@@ -2,7 +2,7 @@ use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-/// Cooperatively gives up a timeslice to the task scheduler.
+/// Cooperatively gives up a timeslice to the karx scheduler.
 ///
 /// Calling this function will move the currently executing future to the back
 /// of the execution queue, making room for other futures to execute. This is

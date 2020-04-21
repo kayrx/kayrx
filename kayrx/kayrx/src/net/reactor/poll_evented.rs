@@ -2,9 +2,9 @@
 //!
 //! This module exposes raw Poll APIs.
 
-use crate::reactor::platform;
-use crate::reactor::registration::Registration;
-use crate::lxio::{self, event::Evented};
+use super::platform;
+use super::registration::Registration;
+use crate::lxar::{self, event::Evented};
 
 use futures_io::{AsyncRead, AsyncWrite};
 use futures_util::ready;
@@ -20,10 +20,10 @@ use std::task::{Context, Poll};
 /// [`std::io::Write`] traits with the reactor that drives it.
 ///
 /// `PollEvented` uses [`Registration`] internally to take a type that
-/// implements [`lxio::Evented`] as well as [`std::io::Read`] and or
+/// implements [`lxar::Evented`] as well as [`std::io::Read`] and or
 /// [`std::io::Write`] and associate it with a reactor that will drive it.
 ///
-/// Once the [`lxio::Evented`] type is wrapped by `PollEvented`, it can be
+/// Once the [`lxar::Evented`] type is wrapped by `PollEvented`, it can be
 /// used from within the future's execution model. As such, the `PollEvented`
 /// type provides [`AsyncRead`] and [`AsyncWrite`] implementations using the
 /// underlying I/O resource as well as readiness events provided by the reactor.
@@ -76,7 +76,7 @@ use std::task::{Context, Poll};
 ///
 /// ## Platform-specific events
 ///
-/// `PollEvented` also allows receiving platform-specific `lxio::Ready` events.
+/// `PollEvented` also allows receiving platform-specific `lxar::event::Ready` events.
 /// These events are included as part of the read readiness event stream. The
 /// write readiness event stream is only for `Ready::writable()` events.
 ///
@@ -169,15 +169,15 @@ where
     pub fn poll_read_ready(
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
-    ) -> Poll<io::Result<lxio::Ready>> {
+    ) -> Poll<io::Result<lxar::event::Ready>> {
         self.register()?;
 
         // Load cached & encoded readiness.
         let mut cached = self.inner.read_readiness.load(Relaxed);
-        let mask = lxio::Ready::readable() | platform::hup();
+        let mask = lxar::event::Ready::readable() | platform::hup();
 
         // See if the current readiness matches any bits.
-        let mut ret = lxio::Ready::from_usize(cached) & lxio::Ready::readable();
+        let mut ret = lxar::event::Ready::from_usize(cached) & lxar::event::Ready::readable();
 
         if ret.is_empty() {
             // Readiness does not match, consume the registration's readiness
@@ -204,7 +204,7 @@ where
                 self.inner.read_readiness.store(cached, Relaxed);
             }
 
-            Poll::Ready(Ok(lxio::Ready::from_usize(cached)))
+            Poll::Ready(Ok(lxar::event::Ready::from_usize(cached)))
         }
     }
 
@@ -219,7 +219,7 @@ where
     pub fn clear_read_ready(self: Pin<&mut Self>, cx: &mut Context<'_>) -> io::Result<()> {
         self.inner
             .read_readiness
-            .fetch_and(!lxio::Ready::readable().as_usize(), Relaxed);
+            .fetch_and(!lxar::event::Ready::readable().as_usize(), Relaxed);
 
         if self.poll_read_ready(cx)?.is_ready() {
             // Notify the current task
@@ -248,15 +248,15 @@ where
     ///
     /// * `ready` contains bits besides `writable` and `hup`.
     /// * called from outside of a task context.
-    pub fn poll_write_ready(&self, cx: &mut Context<'_>) -> Poll<Result<lxio::Ready, io::Error>> {
+    pub fn poll_write_ready(&self, cx: &mut Context<'_>) -> Poll<Result<lxar::event::Ready, io::Error>> {
         self.register()?;
 
         // Load cached & encoded readiness.
         let mut cached = self.inner.write_readiness.load(Relaxed);
-        let mask = lxio::Ready::writable() | platform::hup();
+        let mask = lxar::event::Ready::writable() | platform::hup();
 
         // See if the current readiness matches any bits.
-        let mut ret = lxio::Ready::from_usize(cached) & lxio::Ready::writable();
+        let mut ret = lxar::event::Ready::from_usize(cached) & lxar::event::Ready::writable();
 
         if ret.is_empty() {
             // Readiness does not match, consume the registration's readiness
@@ -283,7 +283,7 @@ where
                 self.inner.write_readiness.store(cached, Relaxed);
             }
 
-            Poll::Ready(Ok(lxio::Ready::from_usize(cached)))
+            Poll::Ready(Ok(lxar::event::Ready::from_usize(cached)))
         }
     }
 
@@ -302,7 +302,7 @@ where
     pub fn clear_write_ready(self: Pin<&mut Self>, cx: &mut Context<'_>) -> io::Result<()> {
         self.inner
             .write_readiness
-            .fetch_and(!lxio::Ready::writable().as_usize(), Relaxed);
+            .fetch_and(!lxar::event::Ready::writable().as_usize(), Relaxed);
 
         if self.poll_write_ready(cx)?.is_ready() {
             // Notify the current task

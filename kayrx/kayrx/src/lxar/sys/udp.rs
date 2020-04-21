@@ -1,10 +1,12 @@
-use crate::lxio::{Ready, Poll, PollOpt, Token};
-use crate::lxio::event::{Evented, EventedFd};
-use crate::lxio::sys::io::VecIo;
+
 use std::fmt;
 use std::io;
 use std::net::{self, Ipv4Addr, Ipv6Addr, SocketAddr};
 use std::os::unix::io::{RawFd, IntoRawFd, AsRawFd, FromRawFd};
+
+use crate::lxar::{Poll, Token};
+use crate::lxar::event::{Ready, Evented, PollOpt, EventedFd};
+use crate::lxar::sys::io::VecIo;
 
 #[allow(unused_imports)] // only here for Rust 1.8
 use net2::UdpSocketExt;

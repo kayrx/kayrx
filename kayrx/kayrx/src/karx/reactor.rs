@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use std::io;
 
-use crate::lxio::{self, event::Evented};
+use crate::lxar::{self, event::Evented};
 use slab::Slab;
 use std::task::{Context, Poll, Waker};
 
@@ -13,7 +13,7 @@ use super::RUNTIME;
 #[derive(Debug)]
 struct Entry {
     /// A unique identifier.
-    token: lxio::Token,
+    token: lxar::Token,
 
     /// Tasks that are blocked on reading from this I/O handle.
     readers: Mutex<Readers>,
@@ -24,20 +24,20 @@ struct Entry {
 
 /// The state of a networking driver.
 pub struct Reactor {
-    /// A lxio instance that polls for new events.
-    poller: lxio::Poll,
+    /// A lxar instance that polls for new events.
+    poller: lxar::Poll,
 
-    /// A list into which lxio stores events.
-    events: Mutex<lxio::Events>,
+    /// A list into which lxar stores events.
+    events: Mutex<lxar::event::Events>,
 
     /// A collection of registered I/O handles.
     entries: Mutex<Slab<Arc<Entry>>>,
 
     /// Dummy I/O handle that is only used to wake up the polling thread.
-    notify_reg: (lxio::Registration, lxio::SetReadiness),
+    notify_reg: (lxar::Registration, lxar::SetReadiness),
 
     /// An identifier for the notification handle.
-    notify_token: lxio::Token,
+    notify_token: lxar::Token,
 }
 
 /// The set of `Waker`s interested in read readiness.
@@ -63,15 +63,15 @@ struct Writers {
 impl Reactor {
     /// Creates a new reactor for polling I/O events.
     pub fn new() -> io::Result<Reactor> {
-        let poller = lxio::Poll::new()?;
-        let notify_reg = lxio::Registration::new2();
+        let poller = lxar::Poll::new()?;
+        let notify_reg = lxar::Registration::new2();
 
         let mut reactor = Reactor {
             poller,
-            events: Mutex::new(lxio::Events::with_capacity(1000)),
+            events: Mutex::new(lxar::event::Events::with_capacity(1000)),
             entries: Mutex::new(Slab::new()),
             notify_reg,
-            notify_token: lxio::Token(0),
+            notify_token: lxar::Token(0),
         };
 
         // Register a dummy I/O handle for waking up the polling thread.
@@ -87,7 +87,7 @@ impl Reactor {
 
         // Reserve a vacant spot in the slab and use its key as the token value.
         let vacant = entries.vacant_entry();
-        let token = lxio::Token(vacant.key());
+        let token = lxar::Token(vacant.key());
 
         // Allocate an entry and insert it into the slab.
         let entry = Arc::new(Entry {
@@ -104,8 +104,8 @@ impl Reactor {
         vacant.insert(entry.clone());
 
         // Register the I/O event source in the poller.
-        let interest = lxio::Ready::all();
-        let opts = lxio::PollOpt::edge();
+        let interest = lxar::event::Ready::all();
+        let opts = lxar::event::PollOpt::edge();
         self.poller.register(source, token, interest, opts)?;
 
         Ok(entry)
@@ -113,7 +113,7 @@ impl Reactor {
 
     /// Deregisters an I/O event source associated with an entry.
     fn deregister(&self, source: &dyn Evented, entry: &Entry) -> io::Result<()> {
-        // Deregister the I/O object from the lxio instance.
+        // Deregister the I/O object from the lxar instance.
         self.poller.deregister(source)?;
 
         // Remove the entry associated with the I/O object.
@@ -124,7 +124,7 @@ impl Reactor {
 
     /// Notifies the reactor so that polling stops blocking.
     pub fn notify(&self) -> io::Result<()> {
-        self.notify_reg.1.set_readiness(lxio::Ready::readable())
+        self.notify_reg.1.set_readiness(lxar::event::Ready::readable())
     }
 
     /// Waits on the poller for new events and wakes up tasks blocked on I/O handles.
@@ -147,7 +147,7 @@ impl Reactor {
 
             if token == self.notify_token {
                 // If this is the notification token, we just need the notification state.
-                self.notify_reg.1.set_readiness(lxio::Ready::empty())?;
+                self.notify_reg.1.set_readiness(lxar::event::Ready::empty())?;
             } else {
                 // Otherwise, look for the entry associated with this token.
                 if let Some(entry) = entries.get(token.0) {
@@ -155,7 +155,7 @@ impl Reactor {
                     let readiness = event.readiness();
 
                     // Wake up reader tasks blocked on this I/O handle.
-                    let reader_interests = lxio::Ready::all() - lxio::Ready::writable();
+                    let reader_interests = lxar::event::Ready::all() - lxar::event::Ready::writable();
                     if !(readiness & reader_interests).is_empty() {
                         let mut readers = entry.readers.lock().unwrap();
                         readers.ready = true;
@@ -166,7 +166,7 @@ impl Reactor {
                     }
 
                     // Wake up writer tasks blocked on this I/O handle.
-                    let writer_interests = lxio::Ready::all() - lxio::Ready::readable();
+                    let writer_interests = lxar::event::Ready::all() - lxar::event::Ready::readable();
                     if !(readiness & writer_interests).is_empty() {
                         let mut writers = entry.writers.lock().unwrap();
                         writers.ready = true;

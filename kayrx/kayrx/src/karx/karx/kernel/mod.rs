@@ -1,5 +1,3 @@
-//! Asynchronous green-threads.
-
 mod header;
 mod join_handle;
 mod raw;

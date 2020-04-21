@@ -11,7 +11,7 @@ use crossbeam_deque::{Injector, Steal, Stealer, Worker};
 use crossbeam_utils::thread::scope;
 use once_cell::unsync::OnceCell;
 
-use crate::sync::Spinlock;
+use super::utils::Spinlock;
 use super::Reactor;
 use super::karx::Runnable;
 use super::karx::utils::{abort_on_panic, random};

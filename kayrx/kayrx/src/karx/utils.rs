@@ -66,8 +66,7 @@ impl<'a, T> DerefMut for SpinlockGuard<'a, T> {
 fn spinlock() {
     use std::sync::Arc;
 
-    use crate::sync::{Spinlock};
-    use crate::karx;
+    use crate::karx::{self, utils::Spinlock};
 
     karx::exec(async {
 

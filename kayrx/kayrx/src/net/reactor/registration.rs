@@ -6,7 +6,7 @@ use std::sync::atomic::Ordering::SeqCst;
 use std::task::{Context, Poll, Waker};
 use std::{io, ptr, usize};
 
-use crate::lxio::{self, event::Evented};
+use crate::lxar::{self, event::Evented};
 
 /// Associates an I/O resource with the reactor instance that drives it.
 ///
@@ -32,7 +32,7 @@ use crate::lxio::{self, event::Evented};
 ///
 /// ## Platform-specific events
 ///
-/// `Registration` also allows receiving platform-specific `lxio::Ready` events.
+/// `Registration` also allows receiving platform-specific `lxar::event::Ready` events.
 /// These events are included as part of the read readiness event stream. The
 /// write readiness event stream is only for `Ready::writable()` events.
 ///
@@ -246,7 +246,7 @@ impl Registration {
     /// # Panics
     ///
     /// This function will panic if called from outside of a task context.
-    pub fn poll_read_ready(&self, cx: &mut Context<'_>) -> Poll<io::Result<lxio::Ready>> {
+    pub fn poll_read_ready(&self, cx: &mut Context<'_>) -> Poll<io::Result<lxar::event::Ready>> {
         match self.poll_ready(Some(cx), Direction::Read) {
             Ok(Some(v)) => Poll::Ready(Ok(v)),
             Ok(None) => Poll::Pending,
@@ -261,7 +261,7 @@ impl Registration {
     /// it is safe to call this function from outside of a task context.
     ///
     /// [`poll_read_ready`]: #method.poll_read_ready
-    pub fn take_read_ready(&self) -> io::Result<Option<lxio::Ready>> {
+    pub fn take_read_ready(&self) -> io::Result<Option<lxar::event::Ready>> {
         self.poll_ready(None, Direction::Read)
     }
 
@@ -296,7 +296,7 @@ impl Registration {
     /// # Panics
     ///
     /// This function will panic if called from outside of a task context.
-    pub fn poll_write_ready(&self, cx: &mut Context<'_>) -> Poll<io::Result<lxio::Ready>> {
+    pub fn poll_write_ready(&self, cx: &mut Context<'_>) -> Poll<io::Result<lxar::event::Ready>> {
         match self.poll_ready(Some(cx), Direction::Write) {
             Ok(Some(v)) => Poll::Ready(Ok(v)),
             Ok(None) => Poll::Pending,
@@ -311,7 +311,7 @@ impl Registration {
     /// it is safe to call this function from outside of a task context.
     ///
     /// [`poll_write_ready`]: #method.poll_write_ready
-    pub fn take_write_ready(&self) -> io::Result<Option<lxio::Ready>> {
+    pub fn take_write_ready(&self) -> io::Result<Option<lxar::event::Ready>> {
         self.poll_ready(None, Direction::Write)
     }
 
@@ -319,7 +319,7 @@ impl Registration {
         &self,
         mut cx: Option<&mut Context<'_>>,
         direction: Direction,
-    ) -> io::Result<Option<lxio::Ready>> {
+    ) -> io::Result<Option<lxar::event::Ready>> {
         let mut state = self.state.load(SeqCst);
 
         // Cache the node pointer
@@ -448,7 +448,7 @@ impl Inner {
         &self,
         cx: Option<&mut Context<'_>>,
         direction: Direction,
-    ) -> io::Result<Option<lxio::Ready>> {
+    ) -> io::Result<Option<lxar::event::Ready>> {
         if self.token == ERROR {
             return Err(io::Error::new(
                 io::ErrorKind::Other,
@@ -476,7 +476,7 @@ impl Inner {
         // `poll_ready` is called again with a _`direction` of `Write`, the HUP
         // state would not be visible.
         let mut ready =
-            mask & lxio::Ready::from_usize(sched.readiness.fetch_and(!mask_no_hup, SeqCst));
+            mask & lxar::event::Ready::from_usize(sched.readiness.fetch_and(!mask_no_hup, SeqCst));
 
         if ready.is_empty() && cx.is_some() {
             let cx = cx.unwrap();
@@ -487,7 +487,7 @@ impl Inner {
             }
 
             // Try again
-            ready = mask & lxio::Ready::from_usize(sched.readiness.fetch_and(!mask_no_hup, SeqCst));
+            ready = mask & lxar::event::Ready::from_usize(sched.readiness.fetch_and(!mask_no_hup, SeqCst));
         }
 
         if ready.is_empty() {

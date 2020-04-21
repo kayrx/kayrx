@@ -2,11 +2,10 @@ use std::io;
 use std::os::unix::net;
 use std::os::unix::prelude::*;
 use std::path::Path;
-
 use libc;
-use crate::lxio::event::{Evented, EventedFd};
-use crate::lxio::{Poll, PollOpt, Ready, Token};
 
+use crate::lxar::event::{Evented, PollOpt, Ready, EventedFd};
+use crate::lxar::{Poll, Token};
 use super::stream::UnixStream;
 use super::cvt;
 use super::socket::{sockaddr_un, Socket};

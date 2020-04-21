@@ -5,9 +5,9 @@ use libc;
 use std::cmp;
 use iovec::{unix, IoVec};
 
-use crate::lxio::{Ready, Poll, PollOpt, Token};
-use crate::lxio::event::{Evented, EventedFd};
-use crate::lxio::sys::cvt;
+use crate::lxar::{Poll, Token};
+use crate::lxar::event::{Ready, Evented, PollOpt, EventedFd};
+use crate::lxar::sys::cvt;
 
 pub fn set_nonblock(fd: libc::c_int) -> io::Result<()> {
     unsafe {

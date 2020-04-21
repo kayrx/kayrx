@@ -1,7 +1,10 @@
+//! Karx Async Runtime
+
 pub mod futures;
 mod karx;
 mod reactor;
 mod runtime;
+pub(in crate::karx) mod utils;
 
 pub use self::karx::*;
 pub use self::reactor::{Reactor, Watcher};

@@ -1,12 +1,9 @@
-use super::ucred::{self, UCred};
-
-use crate::reactor::PollEvented;
+//! A connected Unix socket
 
 use async_ready::{AsyncReadReady, AsyncWriteReady, TakeError};
 use futures_io::{AsyncRead, AsyncWrite};
 use futures_util::ready;
 use futures_core::Future;
-
 use std::fmt;
 use std::io;
 use std::net::Shutdown;
@@ -15,7 +12,10 @@ use std::os::unix::net::SocketAddr;
 use std::path::Path;
 use std::pin::Pin;
 use std::task::{Context, Poll};
-use crate::lxio;
+
+use crate::lxar;
+use super::ucred::{self, UCred};
+use crate::net::reactor::PollEvented;
 
 /// A structure representing a connected Unix socket.
 ///
@@ -23,7 +23,7 @@ use crate::lxio;
 /// from a listener with `UnixListener::incoming`. Additionally, a pair of
 /// anonymous Unix sockets can be created with `UnixStream::pair`.
 pub struct UnixStream {
-    io: PollEvented<lxio::net::UnixStream>,
+    io: PollEvented<lxar::net::UnixStream>,
 }
 
 /// Future returned by `UnixStream::connect` which will resolve to a
@@ -59,7 +59,7 @@ impl UnixStream {
     /// # Ok(()) }
     /// ```
     pub fn connect(path: impl AsRef<Path>) -> ConnectFuture {
-        let res = lxio::net::UnixStream::connect(path).map(UnixStream::new);
+        let res = lxar::net::UnixStream::connect(path).map(UnixStream::new);
 
         let inner = match res {
             Ok(stream) => State::Waiting(stream),
@@ -85,14 +85,14 @@ impl UnixStream {
     /// # Ok(()) }
     /// ```
     pub fn pair() -> io::Result<(UnixStream, UnixStream)> {
-        let (a, b) = lxio::net::UnixStream::pair()?;
+        let (a, b) = lxar::net::UnixStream::pair()?;
         let a = UnixStream::new(a);
         let b = UnixStream::new(b);
 
         Ok((a, b))
     }
 
-    pub(crate) fn new(stream: lxio::net::UnixStream) -> UnixStream {
+    pub(crate) fn new(stream: lxar::net::UnixStream) -> UnixStream {
         let io = PollEvented::new(stream);
         UnixStream { io }
     }
@@ -194,7 +194,7 @@ impl AsyncWrite for UnixStream {
 }
 
 impl AsyncReadReady for UnixStream {
-    type Ok = lxio::Ready;
+    type Ok = lxar::event::Ready;
     type Err = io::Error;
 
     /// Test whether this socket is ready to be read or not.
@@ -207,7 +207,7 @@ impl AsyncReadReady for UnixStream {
 }
 
 impl AsyncWriteReady for UnixStream {
-    type Ok = lxio::Ready;
+    type Ok = lxar::event::Ready;
     type Err = io::Error;
 
     /// Test whether this socket is ready to be written to or not.

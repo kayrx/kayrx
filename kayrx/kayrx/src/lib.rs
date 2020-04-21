@@ -24,9 +24,6 @@ extern crate alloc;
 pub use kayrx_macro::{main, test, futures};
 
 pub mod karx;
+pub mod lxar;
 pub mod net;
-pub mod sync;
 pub mod timer;
-
-pub(crate) mod lxio;
-pub(crate)  mod reactor;
