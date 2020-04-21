@@ -104,3 +104,53 @@ pub fn test(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     result.into()
 }
+
+
+/// Enables an futures async main function.
+///
+/// # Examples
+///
+/// ```ignore
+/// #[kayrx::futures]
+/// async fn main() -> std::io::Result<()> {
+///     Ok(())
+/// }
+/// ```
+#[proc_macro_attribute]
+pub fn futures(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let input = syn::parse_macro_input!(item as syn::ItemFn);
+
+    let ret = &input.sig.output;
+    let inputs = &input.sig.inputs;
+    let name = &input.sig.ident;
+    let body = &input.block;
+    let attrs = &input.attrs;
+
+    if name != "main" {
+        return TokenStream::from(quote_spanned! { name.span() =>
+            compile_error!("only the main function can be tagged with #[kayrx::futures]"),
+        });
+    }
+
+    if input.sig.asyncness.is_none() {
+        return TokenStream::from(quote_spanned! { input.span() =>
+            compile_error!("the futures async keyword is missing from the function declaration"),
+        });
+    }
+
+    let result = quote! {
+        fn main() #ret {
+            #(#attrs)*
+            async fn main(#inputs) #ret {
+                #body
+            }
+
+            kayrx::karx::futures::default().exec(async {
+                main().await
+            })
+        }
+
+    };
+
+    result.into()
+}

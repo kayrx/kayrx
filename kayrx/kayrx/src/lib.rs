@@ -21,7 +21,7 @@ extern crate alloc;
 
 #[cfg(feature = "macro")]
 #[doc(inline)]
-pub use kayrx_macro::{main, test};
+pub use kayrx_macro::{main, test, futures};
 
 pub mod karx;
 pub mod net;

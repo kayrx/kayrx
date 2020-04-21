@@ -1,6 +1,6 @@
 [package]
 name = "kayrx"
-version = "0.16.0"
+version = "0.16.5"
 authors = ["krircc <krircc@qq.com>"]
 documentation = "https://docs.rs/kayrx/"
 repository = "https://github.com/kayrx/kayrx"
@@ -20,7 +20,7 @@ default = ["macro"]
 macro = ["kayrx-macro"]
 
 [dependencies]
-kayrx-macro = { version =  "1.0.0", optional = true }
+kayrx-macro = { version =  "1.1.0", optional = true }
 crossbeam-channel = "0.4.2"
 crossbeam-deque = "0.7.3"
 crossbeam-utils = "0.7.2"
