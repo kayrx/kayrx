@@ -88,8 +88,9 @@ use std::time::{Duration, Instant};
 /// ```
 /// # use std::error::Error;
 /// # fn try_main() -> Result<(), Box<Error>> {
-/// use mio::{Events, Poll, Ready, PollOpt, Token};
-/// use mio::net::TcpStream;
+/// use kayrx::{Poll, Token};
+/// use kayrx::lxar::event::{Events, Events, Ready, PollOpt};
+/// use kayrx::lxar::net::TcpStream;
 ///
 /// use std::net::{TcpListener, SocketAddr};
 ///
@@ -265,8 +266,9 @@ use std::time::{Duration, Instant};
 /// ```
 /// # use std::error::Error;
 /// # fn try_main() -> Result<(), Box<Error>> {
-/// use mio::{Poll, Ready, PollOpt, Token};
-/// use mio::net::TcpStream;
+/// use kayrx::{Poll, Token};
+/// use kayrx::lxar::event::{Ready, PollOpt};
+/// use kayrx::lxar::net::TcpStream;
 /// use std::time::Duration;
 /// use std::thread;
 ///
@@ -369,8 +371,8 @@ pub struct Poll {
 /// # Examples
 ///
 /// ```
-/// use mio::{Ready, Registration, Poll, PollOpt, Token};
-/// use mio::event::Evented;
+/// use kayrx::lxar::::{Registration, Poll, Token};
+/// use kayrx::lxar::event::{Evented, Ready, PollOpt};
 ///
 /// use std::io;
 /// use std::time::Instant;
@@ -623,7 +625,8 @@ impl Poll {
     /// ```
     /// # use std::error::Error;
     /// # fn try_main() -> Result<(), Box<Error>> {
-    /// use mio::{Poll, Events};
+    /// use kayrx::lxar::event::Events ;
+    /// use kayrx::lxar::Poll;
     /// use std::time::Duration;
     ///
     /// let poll = match Poll::new() {
@@ -731,8 +734,9 @@ impl Poll {
     /// ```
     /// # use std::error::Error;
     /// # fn try_main() -> Result<(), Box<Error>> {
-    /// use mio::{Events, Poll, Ready, PollOpt, Token};
-    /// use mio::net::TcpStream;
+    /// use kayrx::lxar::{Poll, Token};
+    /// use kayrx::lxar::event::{Events, Ready, PollOpt};
+    /// use kayrx::lxar::net::TcpStream;
     /// use std::time::{Duration, Instant};
     ///
     /// let poll = Poll::new()?;
@@ -816,8 +820,9 @@ impl Poll {
     /// ```
     /// # use std::error::Error;
     /// # fn try_main() -> Result<(), Box<Error>> {
-    /// use mio::{Poll, Ready, PollOpt, Token};
-    /// use mio::net::TcpStream;
+    /// use kayrx::lxar::{Poll, Token};
+    /// use kayrx::lxar::event::{Ready, PollOpt};
+    /// use kayrx::lxar::net::TcpStream;
     ///
     /// let poll = Poll::new()?;
     /// let socket = TcpStream::connect(&"216.58.193.100:80".parse()?)?;
@@ -873,8 +878,9 @@ impl Poll {
     /// ```
     /// # use std::error::Error;
     /// # fn try_main() -> Result<(), Box<Error>> {
-    /// use mio::{Events, Poll, Ready, PollOpt, Token};
-    /// use mio::net::TcpStream;
+     /// use kayrx::lxar::{Poll, Token};
+    /// use kayrx::lxar::event::{Events, Ready, PollOpt};
+    /// use kayrx::lxar::net::TcpStream;
     /// use std::time::Duration;
     ///
     /// let poll = Poll::new()?;
@@ -954,8 +960,9 @@ impl Poll {
     /// ```
     /// # use std::error::Error;
     /// # fn try_main() -> Result<(), Box<Error>> {
-    /// use mio::{Events, Poll, Ready, PollOpt, Token};
-    /// use mio::net::TcpStream;
+    /// use kayrx::lxar::{Poll, Token};
+    /// use kayrx::lxar::event::{Events, Ready, PollOpt};
+    /// use kayrx::lxar::net::TcpStream;
     ///
     /// use std::net::{TcpListener, SocketAddr};
     /// use std::thread;
@@ -1237,7 +1244,8 @@ impl AsRawFd for Poll {
 /// ```
 /// # use std::error::Error;
 /// # fn try_main() -> Result<(), Box<Error>> {
-/// use mio::{Events, Poll};
+    /// use kayrx::lxar::Poll;
+    /// use kayrx::lxar::event::Events;
 /// use std::time::Duration;
 ///
 /// let mut events = Events::with_capacity(1024);
@@ -1275,7 +1283,8 @@ pub struct Events {
 /// ```
 /// # use std::error::Error;
 /// # fn try_main() -> Result<(), Box<Error>> {
-/// use mio::{Events, Poll};
+    /// use kayrx::lxar::Poll;
+    /// use kayrx::lxar::event::Events;
 /// use std::time::Duration;
 ///
 /// let mut events = Events::with_capacity(1024);
@@ -1313,7 +1322,8 @@ pub struct Iter<'a> {
 /// ```
 /// # use std::error::Error;
 /// # fn try_main() -> Result<(), Box<Error>> {
-/// use mio::{Events, Poll};
+    /// use kayrx::lxar::Poll;
+    /// use kayrx::lxar::event::Events;
 /// use std::time::Duration;
 ///
 /// let mut events = Events::with_capacity(1024);
@@ -1346,7 +1356,7 @@ impl Events {
     /// # Examples
     ///
     /// ```
-    /// use mio::Events;
+    /// use kayrx::lxar::event::Events;
     ///
     /// let events = Events::with_capacity(1024);
     ///
@@ -1373,7 +1383,7 @@ impl Events {
     /// Returns the number of `Event` values that `self` can hold.
     ///
     /// ```
-    /// use mio::Events;
+    /// use kayrx::lxar::event::Events;
     ///
     /// let events = Events::with_capacity(1024);
     ///
@@ -1388,7 +1398,7 @@ impl Events {
     /// # Examples
     ///
     /// ```
-    /// use mio::Events;
+    /// use kayrx::lxar::event::Events;
     ///
     /// let events = Events::with_capacity(1024);
     ///
@@ -1405,7 +1415,8 @@ impl Events {
     /// ```
     /// # use std::error::Error;
     /// # fn try_main() -> Result<(), Box<Error>> {
-    /// use mio::{Events, Poll};
+    /// use kayrx::lxar::Poll;
+    /// use kayrx::lxar::event::Events;
     /// use std::time::Duration;
     ///
     /// let mut events = Events::with_capacity(1024);
@@ -1439,7 +1450,8 @@ impl Events {
     /// ```
     /// # use std::error::Error;
     /// # fn try_main() -> Result<(), Box<Error>> {
-    /// use mio::{Events, Poll};
+    /// use kayrx::lxar::Poll;
+    /// use kayrx::lxar::event::Events;
     /// use std::time::Duration;
     ///
     /// let mut events = Events::with_capacity(1024);
@@ -1547,7 +1559,8 @@ impl Registration {
     /// ```
     /// # use std::error::Error;
     /// # fn try_main() -> Result<(), Box<Error>> {
-    /// use mio::{Events, Ready, Registration, Poll, PollOpt, Token};
+/// use kayrx::lxar::{Poll, Registration, Token};
+/// use kayrx::lxar::event::{Events, Ready, PollOpt};
     /// use std::thread;
     ///
     /// let (registration, set_readiness) = Registration::new2();
@@ -1692,7 +1705,8 @@ impl SetReadiness {
     /// ```
     /// # use std::error::Error;
     /// # fn try_main() -> Result<(), Box<Error>> {
-    /// use mio::{Registration, Ready};
+    /// use kayrx::lxar::Registration;
+    /// use kayrx::lxar::event::Ready;
     ///
     /// let (registration, set_readiness) = Registration::new2();
     ///
@@ -1732,7 +1746,8 @@ impl SetReadiness {
     /// ```
     /// # use std::error::Error;
     /// # fn try_main() -> Result<(), Box<Error>> {
-    /// use mio::{Events, Registration, Ready, Poll, PollOpt, Token};
+/// use kayrx::lxar::{Poll, Registration, Token};
+/// use kayrx::lxar::event::{Events, Ready, PollOpt};
     ///
     /// let poll = Poll::new()?;
     /// let (registration, set_readiness) = Registration::new2();
@@ -1770,7 +1785,8 @@ impl SetReadiness {
     /// ```
     /// # use std::error::Error;
     /// # fn try_main() -> Result<(), Box<Error>> {
-    /// use mio::{Registration, Ready};
+    /// use kayrx::lxar::Registration;
+    /// use kayrx::lxar::event::Ready;
     ///
     /// let (registration, set_readiness) = Registration::new2();
     ///

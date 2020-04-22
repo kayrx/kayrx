@@ -28,7 +28,7 @@ macro_rules! ready {
 /// ```rust,norun
 /// use std::time::Duration;
 /// use futures_util::stream::StreamExt;
-/// use kayrx_timer::throttle;
+/// use kayrx::timer::throttle;
 ///
 /// # async fn dox() {
 /// let mut item_stream = throttle(Duration::from_secs(2), futures::stream::repeat("one"));

@@ -9,7 +9,7 @@
 //!
 //! The [`ParkThread`] struct implements [`Park`][p] using
 //! [`thread::park`][`std`] to put the thread to sleep. The kayrx reactor also
-//! implements park, but uses [`mio::Poll`][mio] to block the thread instead.
+//! implements park, but uses [`kayrx::lxar::Poll`][mio] to block the thread instead.
 //!
 //! The [`Park`][p] trait is composable. A timer implementation might decorate a
 //! [`Park`][p] implementation by checking if any timeouts have elapsed after

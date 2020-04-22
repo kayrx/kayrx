@@ -32,8 +32,9 @@ use crate::lxar::poll::SelectorId;
 /// // SENDER -> sends a message.
 /// // ECHOER -> listens and prints the message received.
 ///
-/// use mio::net::UdpSocket;
-/// use mio::{Events, Ready, Poll, PollOpt, Token};
+/// use kayrx::lxar::net::UdpSocket;
+/// use kayrx::lxar::{Poll, Token};
+/// use kayrx::lxar::event::{Events, Ready, PollOpt};
 /// use std::time::Duration;
 ///
 /// const SENDER: Token = Token(0);
@@ -103,7 +104,7 @@ impl UdpSocket {
     /// # use std::error::Error;
     /// #
     /// # fn try_main() -> Result<(), Box<Error>> {
-    /// use mio::net::UdpSocket;
+    /// use kayrx::lxar::net::UdpSocket;
     ///
     /// // We must bind it to an open address.
     /// let socket = match UdpSocket::bind(&"127.0.0.1:0".parse()?) {
@@ -155,7 +156,7 @@ impl UdpSocket {
     /// # use std::error::Error;
     /// #
     /// # fn try_main() -> Result<(), Box<Error>> {
-    /// use mio::net::UdpSocket;
+    /// use kayrx::lxar::net::UdpSocket;
     ///
     /// let addr = "127.0.0.1:0".parse()?;
     /// let socket = UdpSocket::bind(&addr)?;
@@ -182,7 +183,7 @@ impl UdpSocket {
     /// # use std::error::Error;
     /// #
     /// # fn try_main() -> Result<(), Box<Error>> {
-    /// use mio::net::UdpSocket;
+    /// use kayrx::lxar::net::UdpSocket;
     ///
     /// // We must bind it to an open address.
     /// let socket = UdpSocket::bind(&"127.0.0.1:0".parse()?)?;
@@ -218,7 +219,7 @@ impl UdpSocket {
     /// ```no_run
     /// # use std::error::Error;
     /// # fn try_main() -> Result<(), Box<Error>> {
-    /// use mio::net::UdpSocket;
+    /// use kayrx::lxar::net::UdpSocket;
     ///
     /// let socket = UdpSocket::bind(&"127.0.0.1:0".parse()?)?;
     ///
@@ -248,7 +249,7 @@ impl UdpSocket {
     /// # use std::error::Error;
     /// #
     /// # fn try_main() -> Result<(), Box<Error>> {
-    /// use mio::net::UdpSocket;
+    /// use kayrx::lxar::net::UdpSocket;
     ///
     /// let socket = UdpSocket::bind(&"127.0.0.1:0".parse()?)?;
     ///
@@ -300,7 +301,7 @@ impl UdpSocket {
     /// # use std::error::Error;
     /// #
     /// # fn try_main() -> Result<(), Box<Error>> {
-    /// use mio::net::UdpSocket;
+    /// use kayrx::lxar::net::UdpSocket;
     ///
     /// let broadcast_socket = UdpSocket::bind(&"127.0.0.1:0".parse()?)?;
     /// if broadcast_socket.broadcast()? == false {
@@ -333,7 +334,7 @@ impl UdpSocket {
     /// # use std::error::Error;
     /// #
     /// # fn try_main() -> Result<(), Box<Error>> {
-    /// use mio::net::UdpSocket;
+    /// use kayrx::lxar::net::UdpSocket;
     ///
     /// let broadcast_socket = UdpSocket::bind(&"127.0.0.1:0".parse()?)?;
     /// assert_eq!(broadcast_socket.broadcast()?, false);
@@ -417,7 +418,7 @@ impl UdpSocket {
     /// # use std::error::Error;
     /// #
     /// # fn try_main() -> Result<(), Box<Error>> {
-    /// use mio::net::UdpSocket;
+    /// use kayrx::lxar::net::UdpSocket;
     ///
     /// let socket = UdpSocket::bind(&"127.0.0.1:0".parse()?)?;
     /// if socket.ttl()? < 255 {
@@ -449,7 +450,7 @@ impl UdpSocket {
     /// # use std::error::Error;
     /// #
     /// # fn try_main() -> Result<(), Box<Error>> {
-    /// use mio::net::UdpSocket;
+    /// use kayrx::lxar::net::UdpSocket;
     ///
     /// let socket = UdpSocket::bind(&"127.0.0.1:0".parse()?)?;
     /// socket.set_ttl(255)?;

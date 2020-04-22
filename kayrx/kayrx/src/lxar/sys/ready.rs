@@ -26,8 +26,8 @@ use std::fmt;
 /// Most of the time, all that is needed is using bit operations
 ///
 /// ```
-/// use mio::Ready;
-/// use mio::unix::UnixReady;
+/// use kayrx::lxar::event::Ready;
+/// use kayrx::lxar::UnixReady;
 ///
 /// let ready = Ready::readable() | UnixReady::hup();
 ///
@@ -38,8 +38,8 @@ use std::fmt;
 /// Basic conversion between ready types.
 ///
 /// ```
-/// use mio::Ready;
-/// use mio::unix::UnixReady;
+/// use kayrx::lxar::event::Ready;
+/// use kayrx::lxar::UnixReady;
 ///
 /// // Start with a portable ready
 /// let ready = Ready::readable();
@@ -66,9 +66,10 @@ use std::fmt;
 /// ```
 /// # use std::error::Error;
 /// # fn try_main() -> Result<(), Box<Error>> {
-/// use mio::{Ready, Poll, PollOpt, Token};
-/// use mio::net::TcpStream;
-/// use mio::unix::UnixReady;
+/// use kayrx::lxar::{Poll, Token};
+/// use kayrx::lxar::event::{Ready, PollOpt};
+/// use kayrx::lxar::net::TcpStream;
+/// use kayrx::lxar::UnixReady;
 ///
 /// let addr = "216.58.193.68:80".parse()?;
 /// let socket = TcpStream::connect(&addr)?;
@@ -125,7 +126,7 @@ impl UnixReady {
     /// # Examples
     ///
     /// ```
-    /// use mio::unix::UnixReady;
+    /// use kayrx::lxar::UnixReady;
     ///
     /// let ready = UnixReady::aio();
     ///
@@ -151,7 +152,7 @@ impl UnixReady {
     /// # Examples
     ///
     /// ```
-    /// use mio::unix::UnixReady;
+    /// use kayrx::lxar::UnixReady;
     ///
     /// let ready = UnixReady::error();
     ///
@@ -181,7 +182,7 @@ impl UnixReady {
     /// # Examples
     ///
     /// ```
-    /// use mio::unix::UnixReady;
+    /// use kayrx::lxar::UnixReady;
     ///
     /// let ready = UnixReady::hup();
     ///
@@ -202,7 +203,7 @@ impl UnixReady {
     /// # Examples
     ///
     /// ```
-    /// use mio::unix::UnixReady;
+    /// use kayrx::lxar::UnixReady;
     ///
     /// let ready = UnixReady::priority();
     ///
@@ -221,7 +222,7 @@ impl UnixReady {
     /// # Examples
     ///
     /// ```
-    /// use mio::unix::UnixReady;
+    /// use kayrx::lxar::UnixReady;
     ///
     /// let ready = UnixReady::aio();
     ///
@@ -246,7 +247,7 @@ impl UnixReady {
     /// # Examples
     ///
     /// ```
-    /// use mio::unix::UnixReady;
+    /// use kayrx::lxar::UnixReady;
     ///
     /// let ready = UnixReady::error();
     ///
@@ -275,7 +276,7 @@ impl UnixReady {
     /// # Examples
     ///
     /// ```
-    /// use mio::unix::UnixReady;
+    /// use kayrx::lxar::UnixReady;
     ///
     /// let ready = UnixReady::hup();
     ///
@@ -296,7 +297,7 @@ impl UnixReady {
     /// # Examples
     ///
     /// ```
-    /// use mio::unix::UnixReady;
+    /// use kayrx::lxar::UnixReady;
     ///
     /// let ready = UnixReady::priority();
     ///

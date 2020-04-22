@@ -29,7 +29,7 @@ macro_rules! ready {
 /// # Examples
 ///
 /// ```rust
-/// use kayrx_timer::{self, Duration};
+/// use kayrx::timer::{self, Duration};
 /// use kayrx::karx;
 ///
 /// fn main() {
@@ -63,7 +63,7 @@ pub fn interval(period: Duration) -> Interval {
 /// # Examples
 ///
 /// ```
-/// use kayrx_timer::{interval_at, Duration, Instant};
+/// use kayrx::timer::{interval_at, Duration, Instant};
 /// use kayrx::karx;
 ///
 /// fn main() {
@@ -121,7 +121,7 @@ impl Interval {
     /// # Examples
     ///
     /// ```
-    /// use kayrx_timer;
+    /// use kayrx::timer;
     /// use std::time::Duration;
     /// use kayrx::karx;
     ///

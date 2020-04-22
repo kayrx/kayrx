@@ -13,8 +13,9 @@
 /// ```
 /// # use std::error::Error;
 /// # fn try_main() -> Result<(), Box<Error>> {
-/// use mio::{Events, Ready, Poll, PollOpt, Token};
-/// use mio::net::TcpListener;
+/// use kayrx::lxar::{Poll, Token};
+/// use kayrx::lxar::event::{Events, Ready, PollOpt};
+/// use kayrx::lxar::net::TcpListener;
 ///
 /// use std::thread;
 /// use std::io::{self, Read};

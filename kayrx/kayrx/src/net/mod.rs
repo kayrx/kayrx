@@ -1,19 +1,12 @@
 //! # Async network TCP, UDP, UDS
 //!
-//! The types defined in this module are designed to closely follow the APIs of the
-//! analogous types in `std::net`. But rather than implementing synchronous traits
-//! like `std::io::{Read, Write}`, these types implement the asychronous versions
-//! provided by the `futures-preview` crate, i.e. `futures::io::{AsyncRead, AsyncWrite}`.
-//! When using `async`/`await` syntax, the experience should be quite similar to
-//! traditional blocking code that uses `std::net`.
-//!
-//! Because futures-preview is currently unstable, this crate requires
-//! nightly Rust.
+//! The types  are designed to closely follow the APIs of the
+//! analogous types in `std::net` in `Asychronous` versions.
 //!
 //! # Examples
 //! __TCP Server__
 //! ```rust
-//! use kayrx::net::tcp::{TcpListener, TcpStream};
+//! use kayrx::net::{TcpListener, TcpStream};
 //! use futures::prelude::*;
 //!
 //! async fn say_hello(mut stream: TcpStream) {
@@ -36,7 +29,7 @@
 //! ```rust,no_run
 //! use std::error::Error;
 //! use futures::prelude::*;
-//! use kayrx::net::tcp::{TcpListener, TcpStream};
+//! use kayrx::net::{TcpListener, TcpStream};
 //!
 //! async fn receive_sonnet() -> Result<(), Box<dyn Error + 'static>> {
 //!     let socket_addr = "127.0.0.1:8080".parse()?;

@@ -1,4 +1,4 @@
-//! Async UDS (Unix Domain Sockets) bindings.
+//! Async UDS (Unix Domain Sockets)
 //!
 //! # Example
 //!

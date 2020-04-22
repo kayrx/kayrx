@@ -39,8 +39,9 @@ use crate::lxar::poll::SelectorId;
 /// #
 /// # fn try_main() -> Result<(), Box<Error>> {
 /// #     let _listener = TcpListener::bind("127.0.0.1:34254")?;
-/// use mio::{Events, Ready, Poll, PollOpt, Token};
-/// use mio::net::TcpStream;
+/// use kayrx::lxar::{Poll, Token};
+/// use kayrx::lxar::event::{Events, Ready, PollOpt};
+/// use kayrx::lxar::net::TcpStream;
 /// use std::time::Duration;
 ///
 /// let stream = TcpStream::connect(&"127.0.0.1:34254".parse()?)?;
@@ -444,8 +445,9 @@ impl fmt::Debug for TcpStream {
 /// ```
 /// # use std::error::Error;
 /// # fn try_main() -> Result<(), Box<Error>> {
-/// use mio::{Events, Ready, Poll, PollOpt, Token};
-/// use mio::net::TcpListener;
+/// use kayrx::lxar::{Poll, Token};
+/// use kayrx::lxar::event::{Events, Ready, PollOpt};
+/// use kayrx::lxar::net::TcpListener;
 /// use std::time::Duration;
 ///
 /// let listener = TcpListener::bind(&"127.0.0.1:34255".parse()?)?;

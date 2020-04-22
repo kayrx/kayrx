@@ -19,7 +19,7 @@
 //! # Example
 //!
 //! ```no_run
-//! use kayrx::net::tcp::{TcpListener, TcpStream};
+//! use kayrx::net::{TcpListener, TcpStream};
 //! use futures::prelude::*;
 //!
 //! async fn say_hello(mut stream: TcpStream) {

@@ -8,7 +8,6 @@ use crate::lxar::{Poll, Token};
 use crate::lxar::event::{Ready, Evented, PollOpt, EventedFd};
 use crate::lxar::sys::io::VecIo;
 
-#[allow(unused_imports)] // only here for Rust 1.8
 use net2::UdpSocketExt;
 use iovec::IoVec;
 
