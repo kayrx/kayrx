@@ -105,7 +105,6 @@ pub fn test(_attr: TokenStream, item: TokenStream) -> TokenStream {
     result.into()
 }
 
-
 /// Enables an futures async main function.
 ///
 /// # Examples

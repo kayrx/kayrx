@@ -10,8 +10,8 @@ pub use self::karx::*;
 pub use self::reactor::{Reactor, Watcher};
 pub use self::runtime::Runtime;
 
-use std::thread;
 use once_cell::sync::Lazy;
+use std::thread;
 
 use self::karx::utils::abort_on_panic;
 

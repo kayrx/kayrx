@@ -487,7 +487,8 @@ impl Inner {
             }
 
             // Try again
-            ready = mask & lxar::event::Ready::from_usize(sched.readiness.fetch_and(!mask_no_hup, SeqCst));
+            ready = mask
+                & lxar::event::Ready::from_usize(sched.readiness.fetch_and(!mask_no_hup, SeqCst));
         }
 
         if ready.is_empty() {

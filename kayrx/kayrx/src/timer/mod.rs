@@ -1,8 +1,8 @@
 #![warn(
     rust_2018_idioms,
     unreachable_pub,
-    // missing_debug_implementations,
-    // missing_docs,
+// missing_debug_implementations,
+// missing_docs,
 )]
 #![allow(
     warnings,
@@ -54,7 +54,7 @@
 //!         println!("100 ms have elapsed");
 //!     });
 //! }
-//! 
+//!
 //! ```
 //!
 //! Require that an operation takes no more than 300ms. Note that this uses the
@@ -79,26 +79,27 @@
 
 pub mod delay_queue;
 
-pub use std::time::Duration;
-pub use clock::clock_util::{pause, resume};
-#[doc(inline)]
-pub use delay_queue::DelayQueue;
-pub use delay::{delay_for, delay_until, Delay};
-pub use error::Error;
-pub use self::instant::Instant;
-pub use interval::{interval, interval_at, Interval};
-#[doc(inline)]
-pub use timeout::{timeout, timeout_at, Elapsed, Timeout};
-pub use throttle::{throttle, Throttle};
-
 mod clock;
-mod error;
 mod delay;
+mod error;
 mod instant;
 mod interval;
 mod throttle;
 mod timeout;
 mod wheel;
+
+pub use std::time::Duration;
+
+pub use self::clock::clock_util::{pause, resume};
+pub use self::delay::{delay_for, delay_until, Delay};
+#[doc(inline)]
+pub use self::delay_queue::DelayQueue;
+pub use self::error::Error;
+pub use self::instant::Instant;
+pub use self::interval::{interval, interval_at, Interval};
+pub use self::throttle::{throttle, Throttle};
+#[doc(inline)]
+pub use self::timeout::{timeout, timeout_at, Elapsed, Timeout};
 
 pub(crate) use self::clock::Clock;
 pub(crate) mod driver;

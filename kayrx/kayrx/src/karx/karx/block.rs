@@ -5,8 +5,8 @@ use std::time::Duration;
 use crossbeam_channel::{unbounded, Receiver, Sender};
 use once_cell::sync::Lazy;
 
-use super::{Karx, JoinKarx};
 use super::utils::abort_on_panic;
+use super::{JoinKarx, Karx};
 
 /// Spawns a blocking Karx.
 ///

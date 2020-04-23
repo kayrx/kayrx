@@ -4,6 +4,7 @@ use async_datagram::AsyncDatagram;
 use async_ready::{AsyncReadReady, AsyncWriteReady, TakeError};
 use futures_util::ready;
 use std::fmt;
+use std::future::Future;
 use std::io;
 use std::net::Shutdown;
 use std::os::unix::io::{AsRawFd, RawFd};
@@ -11,7 +12,6 @@ use std::os::unix::net::SocketAddr;
 use std::path::{Path, PathBuf};
 use std::pin::Pin;
 use std::task::{Context, Poll};
-use std::future::Future;
 
 use crate::lxar;
 use crate::net::reactor::PollEvented;

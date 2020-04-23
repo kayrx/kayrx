@@ -1,11 +1,11 @@
+use async_ready::AsyncReady;
+use futures_core::stream::Stream;
+use futures_util::ready;
 use std::fmt;
 use std::io;
 use std::net::{self, SocketAddr};
 use std::pin::Pin;
 use std::task::{Context, Poll};
-use async_ready::AsyncReady;
-use futures_core::stream::Stream;
-use futures_util::ready;
 
 use super::TcpStream;
 use crate::lxar;
@@ -17,7 +17,6 @@ pub struct TcpListener {
 }
 
 impl TcpListener {
-
     pub fn bind(addr: &SocketAddr) -> io::Result<TcpListener> {
         let l = lxar::net::TcpListener::bind(addr)?;
         Ok(TcpListener::new(l))

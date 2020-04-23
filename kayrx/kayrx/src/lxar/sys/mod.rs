@@ -10,13 +10,12 @@ mod ready;
 mod tcp;
 mod udp;
 
-pub use self::epoll::{Events, Selector};
 pub use self::awakener::Awakener;
-pub use self::io::{Io, set_nonblock};
+pub use self::epoll::{Events, Selector};
+pub use self::io::{set_nonblock, Io};
 pub use self::ready::{UnixReady, READY_ALL};
-pub use self::tcp::{TcpStream, TcpListener};
+pub use self::tcp::{TcpListener, TcpStream};
 pub use self::udp::UdpSocket;
-
 
 pub use iovec::IoVec;
 use std::os::unix::io::FromRawFd;
@@ -55,10 +54,14 @@ trait IsMinusOne {
 }
 
 impl IsMinusOne for i32 {
-    fn is_minus_one(&self) -> bool { *self == -1 }
+    fn is_minus_one(&self) -> bool {
+        *self == -1
+    }
 }
 impl IsMinusOne for isize {
-    fn is_minus_one(&self) -> bool { *self == -1 }
+    fn is_minus_one(&self) -> bool {
+        *self == -1
+    }
 }
 
 fn cvt<T: IsMinusOne>(t: T) -> std::io::Result<T> {

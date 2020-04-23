@@ -1,9 +1,9 @@
 //! A connected Unix socket
 
 use async_ready::{AsyncReadReady, AsyncWriteReady, TakeError};
+use futures_core::Future;
 use futures_io::{AsyncRead, AsyncWrite};
 use futures_util::ready;
-use futures_core::Future;
 use std::fmt;
 use std::io;
 use std::net::Shutdown;
@@ -13,8 +13,8 @@ use std::path::Path;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use crate::lxar;
 use super::ucred::{self, UCred};
+use crate::lxar;
 use crate::net::reactor::PollEvented;
 
 /// A structure representing a connected Unix socket.

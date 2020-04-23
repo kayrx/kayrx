@@ -1,7 +1,7 @@
+use libc;
 use std::marker;
 use std::mem;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use libc;
 
 macro_rules! dlsym {
     (fn $name:ident($($t:ty),*) -> $ret:ty) => (

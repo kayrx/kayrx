@@ -1,8 +1,8 @@
 use super::{Handle, Reactor};
 
-use futures_util::task::AtomicWaker;
-use futures_executor;
 use futures_core::Future;
+use futures_executor;
+use futures_util::task::AtomicWaker;
 use log::debug;
 
 use std::io;

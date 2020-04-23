@@ -1,6 +1,6 @@
 use async_ready::{AsyncReady, TakeError};
-use futures_util::ready;
 use futures_core::Stream;
+use futures_util::ready;
 use std::fmt;
 use std::io;
 use std::os::unix::io::{AsRawFd, RawFd};
@@ -19,7 +19,6 @@ pub struct UnixListener {
 }
 
 impl UnixListener {
-
     pub fn bind(path: impl AsRef<Path>) -> io::Result<UnixListener> {
         let listener = lxar::net::UnixListener::bind(path)?;
         let io = PollEvented::new(listener);

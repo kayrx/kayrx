@@ -1,7 +1,7 @@
 //! Slow down a stream by enforcing a delay between items.
 
-use futures_core::Stream;
 use crate::timer::{Delay, Duration, Instant};
+use futures_core::Stream;
 
 use std::future::Future;
 use std::marker::Unpin;

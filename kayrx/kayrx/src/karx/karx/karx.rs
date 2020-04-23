@@ -5,8 +5,8 @@ use std::ptr;
 use std::sync::atomic::{AtomicPtr, AtomicU64, Ordering};
 use std::sync::Arc;
 
-use super::LocalsMap;
 use super::utils::abort_on_panic;
+use super::LocalsMap;
 
 thread_local! {
     /// A pointer to the currently running Karx.
@@ -176,7 +176,6 @@ impl fmt::Debug for Karx {
     }
 }
 
-
 /// A unique identifier for a karx.
 ///
 /// # Examples
@@ -209,4 +208,3 @@ impl fmt::Display for KarxId {
         write!(f, "{}", self.0)
     }
 }
-

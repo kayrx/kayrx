@@ -1,8 +1,9 @@
-use crate::timer::driver::Inner;
 use std::cell::RefCell;
 use std::fmt;
 use std::marker::PhantomData;
 use std::sync::{Arc, Weak};
+
+use crate::timer::driver::Inner;
 
 /// Handle to time driver instance.
 #[derive(Clone)]

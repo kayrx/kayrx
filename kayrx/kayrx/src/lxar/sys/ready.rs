@@ -1,7 +1,7 @@
-use crate::lxar::event::{Ready, ready_as_usize, ready_from_usize};
+use crate::lxar::event::{ready_as_usize, ready_from_usize, Ready};
 
-use std::ops;
 use std::fmt;
+use std::ops;
 
 /// Unix specific extensions to `Ready`
 ///
@@ -94,11 +94,11 @@ use std::fmt;
 pub struct UnixReady(Ready);
 
 const ERROR: usize = 0b00_0100;
-const HUP: usize   = 0b00_1000;
+const HUP: usize = 0b00_1000;
 
-const AIO: usize   = 0b00_0000;
+const AIO: usize = 0b00_0000;
 
-const LIO: usize   = 0b00_0000;
+const LIO: usize = 0b00_0000;
 
 const PRI: usize = 0b100_0000;
 
@@ -398,7 +398,9 @@ impl fmt::Debug for UnixReady {
 
         for &(flag, msg) in &flags {
             if self.contains(flag) {
-                if one { write!(fmt, " | ")? }
+                if one {
+                    write!(fmt, " | ")?
+                }
                 write!(fmt, "{}", msg)?;
 
                 one = true

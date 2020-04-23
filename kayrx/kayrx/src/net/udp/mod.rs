@@ -11,15 +11,15 @@
 //! [received from]: #method.poll_recv_from
 //! [sent to]: #method.poll_send_to
 
+use async_datagram::AsyncDatagram;
+use async_ready::{AsyncReadReady, AsyncWriteReady};
+use futures_core::Future;
+use futures_util::ready;
 use std::fmt;
 use std::io;
 use std::net::{Ipv4Addr, Ipv6Addr, SocketAddr};
 use std::pin::Pin;
 use std::task::{Context, Poll};
-use async_datagram::AsyncDatagram;
-use async_ready::{AsyncReadReady, AsyncWriteReady};
-use futures_core::Future;
-use futures_util::ready;
 
 use crate::lxar;
 use crate::net::reactor::PollEvented;

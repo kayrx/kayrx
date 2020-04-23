@@ -15,13 +15,13 @@
     clippy::new_without_default
 )]
 
-//! The Kayrx Framework. 
+//! The Kayrx Framework.
 
 extern crate alloc;
 
 #[cfg(feature = "macro")]
 #[doc(inline)]
-pub use kayrx_macro::{main, test, futures};
+pub use kayrx_macro::{futures, main, test};
 
 pub mod karx;
 pub mod lxar;

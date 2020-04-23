@@ -3,25 +3,27 @@
 mod atomic_stack;
 mod atomic_waker;
 mod cell;
-pub(crate) mod future;
 mod entry;
 mod handle;
 mod park;
 mod registration;
-pub(crate) use self::registration::Registration;
 mod stack;
+
+pub(crate) mod future;
+pub(crate) use self::handle::{set_default, Handle};
+pub(crate) use self::registration::Registration;
+
+use crate::timer::{wheel, Error};
+use crate::timer::{Clock, Duration, Instant};
 
 use self::atomic_stack::AtomicStack;
 use self::atomic_waker::AtomicWaker;
 use self::entry::Entry;
-pub(crate) use self::handle::{set_default, Handle};
-use self::stack::Stack;
-use std::sync::atomic::{AtomicU64, AtomicUsize};
 use self::park::{Park, Unpark};
-use crate::timer::{wheel, Error};
-use crate::timer::{Clock, Duration, Instant};
+use self::stack::Stack;
 
 use std::sync::atomic::Ordering::SeqCst;
+use std::sync::atomic::{AtomicU64, AtomicUsize};
 use std::sync::Arc;
 use std::usize;
 use std::{cmp, fmt};

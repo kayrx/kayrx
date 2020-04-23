@@ -1,27 +1,27 @@
 //! kayrx reactor,  event loop.
 
-mod sharded_rwlock;
-mod poll_evented;
 pub(crate) mod background;
+mod poll_evented;
 pub(crate) mod registration;
+mod sharded_rwlock;
 
 pub use self::poll_evented::PollEvented;
 
+use futures_util::task::AtomicWaker;
+use log::{debug, log_enabled, trace, Level};
+use slab::Slab;
 use std::cell::RefCell;
 use std::io;
 use std::mem;
 use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering::{Relaxed, SeqCst};
 use std::sync::{Arc, Weak};
+use std::task::Context;
 use std::time::{Duration, Instant};
 use std::{fmt, usize};
-use std::task::Context;
-use futures_util::task::AtomicWaker;
-use log::{debug, log_enabled, trace, Level};
-use slab::Slab;
 
-use self::sharded_rwlock::RwLock;
 use self::background::Background;
+use self::sharded_rwlock::RwLock;
 use crate::lxar::{self, event::Evented};
 
 /// The kayrx reactor,  event loop.
@@ -185,7 +185,7 @@ impl Reactor {
     /// This function may also return any I/O error which occurs when polling
     /// for readiness of I/O objects with the OS. This is quite unlikely to
     /// arise and typically mean that things have gone horribly wrong at that
-    /// point. 
+    /// point.
     fn turn(&mut self, max_wait: Option<Duration>) -> io::Result<Turn> {
         self.poll(max_wait)?;
         Ok(Turn { _priv: () })
@@ -430,7 +430,10 @@ impl HandlePriv {
     /// return immediately.
     fn wakeup(&self) {
         if let Some(inner) = self.inner() {
-            inner.wakeup.set_readiness(lxar::event::Ready::readable()).unwrap();
+            inner
+                .wakeup
+                .set_readiness(lxar::event::Ready::readable())
+                .unwrap();
         }
     }
 
@@ -547,8 +550,8 @@ impl Direction {
 }
 
 pub(crate) mod platform {
-    use crate::lxar::UnixReady;
     use crate::lxar::event::Ready;
+    use crate::lxar::UnixReady;
 
     pub fn hup() -> Ready {
         UnixReady::hup().into()

@@ -1,7 +1,7 @@
 use std::fmt;
+use std::io;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use std::io;
 
 use crate::lxar::{self, event::Evented};
 use slab::Slab;
@@ -124,7 +124,9 @@ impl Reactor {
 
     /// Notifies the reactor so that polling stops blocking.
     pub fn notify(&self) -> io::Result<()> {
-        self.notify_reg.1.set_readiness(lxar::event::Ready::readable())
+        self.notify_reg
+            .1
+            .set_readiness(lxar::event::Ready::readable())
     }
 
     /// Waits on the poller for new events and wakes up tasks blocked on I/O handles.
@@ -147,7 +149,9 @@ impl Reactor {
 
             if token == self.notify_token {
                 // If this is the notification token, we just need the notification state.
-                self.notify_reg.1.set_readiness(lxar::event::Ready::empty())?;
+                self.notify_reg
+                    .1
+                    .set_readiness(lxar::event::Ready::empty())?;
             } else {
                 // Otherwise, look for the entry associated with this token.
                 if let Some(entry) = entries.get(token.0) {
@@ -155,7 +159,8 @@ impl Reactor {
                     let readiness = event.readiness();
 
                     // Wake up reader tasks blocked on this I/O handle.
-                    let reader_interests = lxar::event::Ready::all() - lxar::event::Ready::writable();
+                    let reader_interests =
+                        lxar::event::Ready::all() - lxar::event::Ready::writable();
                     if !(readiness & reader_interests).is_empty() {
                         let mut readers = entry.readers.lock().unwrap();
                         readers.ready = true;
@@ -166,7 +171,8 @@ impl Reactor {
                     }
 
                     // Wake up writer tasks blocked on this I/O handle.
-                    let writer_interests = lxar::event::Ready::all() - lxar::event::Ready::readable();
+                    let writer_interests =
+                        lxar::event::Ready::all() - lxar::event::Ready::readable();
                     if !(readiness & writer_interests).is_empty() {
                         let mut writers = entry.writers.lock().unwrap();
                         writers.ready = true;

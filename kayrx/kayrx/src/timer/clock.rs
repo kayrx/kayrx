@@ -1,6 +1,6 @@
 //! Source of time abstraction.
 //!
-//! By default, `std::time::Instant::now()` is used. 
+//! By default, `std::time::Instant::now()` is used.
 
 use crate::timer::Instant;
 
@@ -12,9 +12,9 @@ pub(crate) fn now() -> Instant {
 }
 
 impl Clock {
-   pub(crate) fn new() -> Clock {
-       Clock {}
-   }
+    pub(crate) fn new() -> Clock {
+        Clock {}
+    }
 
     pub(crate) fn now(&self) -> Instant {
         now()
@@ -27,7 +27,6 @@ impl Clock {
         f()
     }
 }
-
 
 // Test Utils
 

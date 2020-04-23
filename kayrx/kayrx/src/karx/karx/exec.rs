@@ -2,8 +2,8 @@ use std::cell::Cell;
 use std::future::Future;
 use std::mem::{self, ManuallyDrop};
 use std::sync::Arc;
+use std::task::{Context, Poll, Waker};
 use std::task::{RawWaker, RawWakerVTable};
-use std::task::{Context, Poll , Waker};
 
 use crossbeam_utils::sync::Parker;
 
@@ -38,7 +38,6 @@ where
 {
     // Create a new karx handle.
     let task = Karx::new(None);
-
 
     let future = async move {
         // Drop task-locals on exit.

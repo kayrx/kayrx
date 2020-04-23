@@ -1,14 +1,14 @@
+use libc;
 use std::io;
 use std::os::unix::net;
 use std::os::unix::prelude::*;
 use std::path::Path;
-use libc;
 
-use crate::lxar::event::{Evented, PollOpt, Ready, EventedFd};
-use crate::lxar::{Poll, Token};
-use super::stream::UnixStream;
 use super::cvt;
 use super::socket::{sockaddr_un, Socket};
+use super::stream::UnixStream;
+use crate::lxar::event::{Evented, EventedFd, PollOpt, Ready};
+use crate::lxar::{Poll, Token};
 
 /// A structure representing a Unix domain socket server.
 ///

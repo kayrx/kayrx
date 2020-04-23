@@ -11,7 +11,6 @@ pub struct UCred {
 
 pub(crate) use self::impl_linux::get_peer_cred;
 
-
 pub(crate) mod impl_linux {
     use crate::net::uds::UnixStream;
     use libc::{c_void, getsockopt, socklen_t, SOL_SOCKET, SO_PEERCRED};

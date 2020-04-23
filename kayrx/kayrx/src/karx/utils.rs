@@ -69,7 +69,6 @@ fn spinlock() {
     use crate::karx::{self, utils::Spinlock};
 
     karx::exec(async {
-
         let m = Arc::new(Spinlock::new(0));
         let mut tasks = vec![];
 

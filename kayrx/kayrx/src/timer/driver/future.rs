@@ -27,7 +27,6 @@ pub(crate) fn ok<T, E>(t: T) -> Ready<Result<T, E>> {
     Ready(Some(Ok(t)))
 }
 
-
 /// Future for the [`poll_fn`] function.
 pub(crate) struct PollFn<F> {
     f: F,

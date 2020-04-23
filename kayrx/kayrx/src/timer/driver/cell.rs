@@ -50,7 +50,6 @@ impl CausalCheck {
     pub(crate) fn join(&mut self, _other: CausalCheck) {}
 }
 
-
 /// Custom cell impl
 
 pub(crate) struct Cell<T> {

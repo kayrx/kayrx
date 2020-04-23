@@ -9,5 +9,3 @@ mod waker_fn;
 pub use self::join_handle::JoinHandle;
 pub use self::task::{spawn, spawn_local, Task};
 pub use self::waker_fn::waker_fn;
-
-

@@ -9,6 +9,6 @@ mod uds;
 
 pub use self::tcp::{TcpListener, TcpStream};
 pub use self::udp::UdpSocket;
-pub use self::uds::stream::UnixStream;
-pub use self::uds::listener::UnixListener;
 pub use self::uds::datagram::UnixDatagram;
+pub use self::uds::listener::UnixListener;
+pub use self::uds::stream::UnixStream;

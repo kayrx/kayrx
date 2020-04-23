@@ -14,7 +14,6 @@ use std::marker::PhantomData;
 use std::pin::Pin;
 use std::task::{self, Poll};
 
-
 macro_rules! ready {
     ($e:expr $(,)?) => {
         match $e {
@@ -82,7 +81,7 @@ macro_rules! ready {
 /// use std::collections::HashMap;
 /// use std::task::{Context, Poll};
 /// use std::time::Duration;
-/// 
+///
 /// type CacheKey = String;
 /// type Value = String;
 ///
@@ -222,7 +221,7 @@ impl<T> DelayQueue<T> {
     ///
     /// ```rust
     /// use kayrx::timer::DelayQueue;
-    /// 
+    ///
     /// let delay_queue: DelayQueue<u32> = DelayQueue::new();
     /// ```
     pub fn new() -> DelayQueue<T> {
@@ -244,7 +243,7 @@ impl<T> DelayQueue<T> {
     ///
     /// fn main() {
     ///     kayrx::karx::exec(async {
-    /// 
+    ///
     ///          let mut delay_queue = DelayQueue::with_capacity(10);
     ///     
     ///          // These insertions are done without further allocation
@@ -254,10 +253,10 @@ impl<T> DelayQueue<T> {
     ///     
     ///          // This will make the queue allocate additional storage
     ///          delay_queue.insert(11, Duration::from_secs(11));
-    /// 
+    ///
     ///     });
     /// }
-    /// 
+    ///
     /// ```
     pub fn with_capacity(capacity: usize) -> DelayQueue<T> {
         DelayQueue {
@@ -300,7 +299,7 @@ impl<T> DelayQueue<T> {
     /// ```rust
     /// use kayrx::timer::{DelayQueue, Duration, Instant};
     ///
-   /// use kayrx::karx;
+    /// use kayrx::karx;
     ///
     /// fn main() {
     ///     kayrx::karx::exec(async {
@@ -406,7 +405,7 @@ impl<T> DelayQueue<T> {
     /// ```rust
     /// use kayrx::timer::DelayQueue;
     /// use std::time::Duration;
-   /// use kayrx::karx;
+    /// use kayrx::karx;
     ///
     /// fn main() {
     ///          kayrx::karx::exec(async {
@@ -461,7 +460,7 @@ impl<T> DelayQueue<T> {
     /// ```rust
     /// use kayrx::timer::DelayQueue;
     /// use std::time::Duration;
-   /// use kayrx::karx;
+    /// use kayrx::karx;
     ///
     /// fn main() {
     ///          kayrx::karx::exec(async {
@@ -513,7 +512,7 @@ impl<T> DelayQueue<T> {
     ///
     /// ```rust
     /// use kayrx::timer::{DelayQueue, Duration, Instant};
-   /// use kayrx::karx;
+    /// use kayrx::karx;
     ///
     /// fn main() {
     ///          kayrx::karx::exec(async {
@@ -747,7 +746,8 @@ impl<T> DelayQueue<T> {
                     ready!(Pin::new(&mut *delay).poll(cx));
                 }
 
-                let now = crate::timer::ms(delay.deadline() - self.start, crate::timer::Round::Down);
+                let now =
+                    crate::timer::ms(delay.deadline() - self.start, crate::timer::Round::Down);
 
                 self.poll = wheel::Poll::new(now);
             }

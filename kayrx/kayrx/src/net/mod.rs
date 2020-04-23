@@ -46,7 +46,7 @@ mod tcp;
 mod udp;
 pub mod uds;
 
-pub(in crate::net)  mod reactor;
+pub(in crate::net) mod reactor;
 
 #[doc(inline)]
 pub use crate::net::tcp::{TcpListener, TcpStream};

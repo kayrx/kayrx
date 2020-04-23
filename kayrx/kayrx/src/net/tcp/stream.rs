@@ -9,8 +9,8 @@ use std::task::{Context, Poll};
 use std::time::Duration;
 
 use async_ready::{AsyncReadReady, AsyncWriteReady};
-use futures_io::{AsyncRead, AsyncWrite};
 use futures_core::Future;
+use futures_io::{AsyncRead, AsyncWrite};
 
 use crate::lxar;
 use crate::net::reactor::PollEvented;

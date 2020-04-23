@@ -1,15 +1,15 @@
-use std::sync::atomic::AtomicU64;
-use crate::timer::driver::AtomicWaker;
-use crate::timer::driver::{Handle, Inner};
-use crate::timer::{Duration, Error, Instant};
-
 use std::cell::UnsafeCell;
 use std::ptr;
 use std::sync::atomic::AtomicBool;
+use std::sync::atomic::AtomicU64;
 use std::sync::atomic::Ordering::SeqCst;
 use std::sync::{Arc, Weak};
 use std::task::{self, Poll};
 use std::u64;
+
+use crate::timer::driver::AtomicWaker;
+use crate::timer::driver::{Handle, Inner};
+use crate::timer::{Duration, Error, Instant};
 
 /// Internal state shared between a `Delay` instance and the timer.
 ///

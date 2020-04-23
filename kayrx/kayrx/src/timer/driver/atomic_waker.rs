@@ -1,8 +1,8 @@
 use crate::timer::driver::cell::CausalCell;
 
-use std::sync::atomic::{self, AtomicUsize};
 use std::fmt;
 use std::sync::atomic::Ordering::{AcqRel, Acquire, Release};
+use std::sync::atomic::{self, AtomicUsize};
 use std::task::Waker;
 
 /// A synchronization primitive for task waking.

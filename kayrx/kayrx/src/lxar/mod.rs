@@ -30,8 +30,6 @@ mod poll;
 mod sys;
 mod token;
 
-pub use self::poll::{ Poll, Registration, SetReadiness,};
+pub use self::poll::{Poll, Registration, SetReadiness};
 pub use self::sys::UnixReady;
 pub use self::token::Token;
-
-

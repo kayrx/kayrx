@@ -1,9 +1,9 @@
 use std::future::Future;
 use std::io;
 
-use crate::karx::RUNTIME;
-use super::{JoinKarx, Karx};
 use super::utils::abort_on_panic;
+use super::{JoinKarx, Karx};
+use crate::karx::RUNTIME;
 
 /// Karx builder that configures the settings of a new Karx.
 #[derive(Debug, Default)]
@@ -34,14 +34,11 @@ impl Builder {
         // Create a new Karx handle.
         let task = Karx::new(self.name);
 
-     
-
         let future = async move {
             // Drop Karx-locals on exit.
             defer! {
                 Karx::get_current(|t| unsafe { t.drop_locals() });
             }
-
 
             future.await
         };

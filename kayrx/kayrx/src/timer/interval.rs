@@ -137,7 +137,7 @@ impl Interval {
     ///          });
     /// }
     /// ```
-    #[allow(clippy::should_implement_trait)] 
+    #[allow(clippy::should_implement_trait)]
     pub async fn tick(&mut self) -> Instant {
         poll_fn(|cx| self.poll_tick(cx)).await
     }

@@ -186,10 +186,12 @@ fn reads_bytes() {
 
     let buf: Vec<u8> = executor::block_on(async {
         let reader: RomioReader = client.into();
-        reader.fold(vec![], |mut agg, b| {
-            agg.extend(b);
-            future::ready(agg)
-        }).await
+        reader
+            .fold(vec![], |mut agg, b| {
+                agg.extend(b);
+                future::ready(agg)
+            })
+            .await
     });
 
     let expected = "The thrust of a sword will end this surrender";

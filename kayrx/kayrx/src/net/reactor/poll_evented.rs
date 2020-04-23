@@ -248,7 +248,10 @@ where
     ///
     /// * `ready` contains bits besides `writable` and `hup`.
     /// * called from outside of a task context.
-    pub fn poll_write_ready(&self, cx: &mut Context<'_>) -> Poll<Result<lxar::event::Ready, io::Error>> {
+    pub fn poll_write_ready(
+        &self,
+        cx: &mut Context<'_>,
+    ) -> Poll<Result<lxar::event::Ready, io::Error>> {
         self.register()?;
 
         // Load cached & encoded readiness.

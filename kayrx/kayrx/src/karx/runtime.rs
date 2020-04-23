@@ -11,10 +11,10 @@ use crossbeam_deque::{Injector, Steal, Stealer, Worker};
 use crossbeam_utils::thread::scope;
 use once_cell::unsync::OnceCell;
 
+use super::karx::utils::{abort_on_panic, random};
+use super::karx::Runnable;
 use super::utils::Spinlock;
 use super::Reactor;
-use super::karx::Runnable;
-use super::karx::utils::{abort_on_panic, random};
 
 thread_local! {
     /// A reference to the current machine, if the current thread runs tasks.
@@ -231,7 +231,11 @@ impl Machine {
             }
         }
 
-        if retry { Steal::Retry } else { Steal::Empty }
+        if retry {
+            Steal::Retry
+        } else {
+            Steal::Empty
+        }
     }
 
     /// Runs the machine on the current thread.

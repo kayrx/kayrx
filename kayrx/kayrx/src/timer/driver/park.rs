@@ -34,19 +34,18 @@
 //! * [`park_timeout`] does the same as [`park`] but allows specifying a maximum
 //!   time to block the thread for.
 
-use std::sync::atomic::AtomicUsize;
-use std::sync::{Arc, Condvar, Mutex};
-use std::sync::atomic::Ordering::SeqCst;
-use std::time::Duration;
 use std::marker::PhantomData;
-use std::rc::Rc;
 use std::mem;
+use std::rc::Rc;
+use std::sync::atomic::AtomicUsize;
+use std::sync::atomic::Ordering::SeqCst;
+use std::sync::{Arc, Condvar, Mutex};
 use std::task::{RawWaker, RawWakerVTable, Waker};
-
+use std::time::Duration;
 
 /// Block the current thread.
 ///
-pub(crate)  trait Park {
+pub(crate) trait Park {
     /// Unpark handle type for the `Park` implementation.
     type Unpark: Unpark;
 
@@ -100,7 +99,7 @@ pub(crate)  trait Park {
 ///
 /// [mod]: ../index.html
 /// [`Park`]: trait.Park.html
-pub(crate)  trait Unpark: Sync + Send + 'static {
+pub(crate) trait Unpark: Sync + Send + 'static {
     /// Unblock a thread that is blocked by the associated `Park` handle.
     ///
     /// Calling `unpark` atomically makes available the unpark token, if it is
@@ -136,18 +135,18 @@ impl Unpark for Arc<dyn Unpark> {
 ///
 /// [`ParkThread`]: struct.ParkThread.html
 #[derive(Debug)]
-pub(crate)  struct ParkError {
+pub(crate) struct ParkError {
     _p: (),
 }
 
 #[derive(Debug)]
-pub(crate)  struct ParkThread {
+pub(crate) struct ParkThread {
     inner: Arc<Inner>,
 }
 
 /// Unblocks a thread that was blocked by `ParkThread`.
 #[derive(Clone, Debug)]
-pub(crate)  struct UnparkThread {
+pub(crate) struct UnparkThread {
     inner: Arc<Inner>,
 }
 
@@ -169,7 +168,7 @@ thread_local! {
 // ==== impl ParkThread ====
 
 impl ParkThread {
-    pub(crate)  fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self {
             inner: Arc::new(Inner {
                 state: AtomicUsize::new(EMPTY),
@@ -333,73 +332,70 @@ impl Unpark for UnparkThread {
     }
 }
 
-
-
 // ============blocking_impl==================
 
 /// Blocks the current thread using a condition variable.
 #[derive(Debug)]
-pub(crate)  struct CachedParkThread {
-        _anchor: PhantomData<Rc<()>>,
+pub(crate) struct CachedParkThread {
+    _anchor: PhantomData<Rc<()>>,
 }
 
-
 impl CachedParkThread {
-        /// Create a new `ParkThread` handle for the current thread.
-        ///
-        /// This type cannot be moved to other threads, so it should be created on
-        /// the thread that the caller intends to park.
-        pub(crate)  fn new() -> CachedParkThread {
-            CachedParkThread {
-                _anchor: PhantomData,
-            }
+    /// Create a new `ParkThread` handle for the current thread.
+    ///
+    /// This type cannot be moved to other threads, so it should be created on
+    /// the thread that the caller intends to park.
+    pub(crate) fn new() -> CachedParkThread {
+        CachedParkThread {
+            _anchor: PhantomData,
         }
+    }
 
-        pub(crate) fn get_unpark(&self) -> Result<UnparkThread, ParkError> {
-            self.with_current(|park_thread| park_thread.unpark())
-        }
+    pub(crate) fn get_unpark(&self) -> Result<UnparkThread, ParkError> {
+        self.with_current(|park_thread| park_thread.unpark())
+    }
 
-        /// Get a reference to the `ParkThread` handle for this thread.
-        fn with_current<F, R>(&self, f: F) ->  Result<R, ParkError>
-        where
-            F: FnOnce(&ParkThread) -> R,
-        {
-            // CURRENT_PARKER.with(|inner| f(inner))
-            CURRENT_PARKER.try_with(|inner| f(inner))
-                .map_err(|_| ParkError { _p: () })
-        }
+    /// Get a reference to the `ParkThread` handle for this thread.
+    fn with_current<F, R>(&self, f: F) -> Result<R, ParkError>
+    where
+        F: FnOnce(&ParkThread) -> R,
+    {
+        // CURRENT_PARKER.with(|inner| f(inner))
+        CURRENT_PARKER
+            .try_with(|inner| f(inner))
+            .map_err(|_| ParkError { _p: () })
+    }
 }
 
 impl Park for CachedParkThread {
-        type Unpark = UnparkThread;
-        type Error = ParkError;
+    type Unpark = UnparkThread;
+    type Error = ParkError;
 
-        fn unpark(&self) -> Self::Unpark {
-            self.get_unpark().unwrap()
-        }
+    fn unpark(&self) -> Self::Unpark {
+        self.get_unpark().unwrap()
+    }
 
-        fn park(&mut self) -> Result<(), Self::Error> {
-            self.with_current(|park_thread| park_thread.inner.park());
-            Ok(())
-        }
+    fn park(&mut self) -> Result<(), Self::Error> {
+        self.with_current(|park_thread| park_thread.inner.park());
+        Ok(())
+    }
 
-        fn park_timeout(&mut self, duration: Duration) -> Result<(), Self::Error> {
-            self.with_current(|park_thread| park_thread.inner.park_timeout(duration));
-            Ok(())
-        }
+    fn park_timeout(&mut self, duration: Duration) -> Result<(), Self::Error> {
+        self.with_current(|park_thread| park_thread.inner.park_timeout(duration));
+        Ok(())
+    }
 }
 
 impl UnparkThread {
-    pub(crate)  fn into_waker(self) -> Waker {
-            unsafe {
-                let raw = unparker_to_raw_waker(self.inner);
-                Waker::from_raw(raw)
-            }
+    pub(crate) fn into_waker(self) -> Waker {
+        unsafe {
+            let raw = unparker_to_raw_waker(self.inner);
+            Waker::from_raw(raw)
+        }
     }
 }
 
 impl Inner {
-
     #[allow(clippy::wrong_self_convention)]
     fn into_raw(this: Arc<Inner>) -> *const () {
         Arc::into_raw(this) as *const ()
@@ -410,36 +406,35 @@ impl Inner {
     }
 }
 
-
 unsafe fn unparker_to_raw_waker(unparker: Arc<Inner>) -> RawWaker {
-        RawWaker::new(
-            Inner::into_raw(unparker),
-            &RawWakerVTable::new(clone, wake, wake_by_ref, drop_waker),
-        )
+    RawWaker::new(
+        Inner::into_raw(unparker),
+        &RawWakerVTable::new(clone, wake, wake_by_ref, drop_waker),
+    )
 }
 
 unsafe fn clone(raw: *const ()) -> RawWaker {
-        let unparker = Inner::from_raw(raw);
+    let unparker = Inner::from_raw(raw);
 
-        // Increment the ref count
-        mem::forget(unparker.clone());
+    // Increment the ref count
+    mem::forget(unparker.clone());
 
-        unparker_to_raw_waker(unparker)
+    unparker_to_raw_waker(unparker)
 }
 
 unsafe fn drop_waker(raw: *const ()) {
-        let _ = Inner::from_raw(raw);
+    let _ = Inner::from_raw(raw);
 }
 
 unsafe fn wake(raw: *const ()) {
-        let unparker = Inner::from_raw(raw);
-        unparker.unpark();
+    let unparker = Inner::from_raw(raw);
+    unparker.unpark();
 }
 
 unsafe fn wake_by_ref(raw: *const ()) {
-        let unparker = Inner::from_raw(raw);
-        unparker.unpark();
+    let unparker = Inner::from_raw(raw);
+    unparker.unpark();
 
-        // We don't actually own a reference to the unparker
-        mem::forget(unparker);
+    // We don't actually own a reference to the unparker
+    mem::forget(unparker);
 }
