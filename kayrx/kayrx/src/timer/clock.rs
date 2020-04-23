@@ -16,15 +16,26 @@
 //! [`Instant::now`]: std::time::Instant::now
 //! [`with_default`]: fn.with_default.html
 
-mod now;
-
-pub use self::now::Now;
-
-use crate::timer::driver;
 use std::cell::Cell;
 use std::fmt;
 use std::sync::Arc;
 use std::time::Instant;
+
+use super::driver;
+
+/// Returns [`Instant`] values representing the current instant in time.
+///
+/// This allows customizing the source of time which is especially useful for
+/// testing.
+///
+/// Implementations must ensure that calls to `now` return monotonically
+/// increasing [`Instant`] values.
+///
+/// [`Instant`]: std::time::Instant
+pub trait Now: Send + Sync + 'static {
+    /// Returns an instant corresponding to "now".
+    fn now(&self) -> Instant;
+}
 
 /// A handle to a source of time.
 ///

@@ -23,11 +23,11 @@
 //!
 //! [`Timer`]: struct.Timer.html
 //! [`Handle`]: struct.Handle.html
-//! [`Delay`]: Delay
-//! [`Now`]: clock::Now
-//! [`Now::now`]: clock::Now::now
+//! [`Delay`]: struct.Delay.html
+//! [`Now`]: clock::Now.html
+//! [`Now::now`]: clock::Now::now.html
 //! [`SystemNow`]: struct.SystemNow.html
-//! [`Instant`]: std::time::Instant
+//! [`Instant`]: std::time::Instant.html
 //! [`Instant::now`]: std::time::Instant::now
 
 // This allows the usage of the old `Now` trait.
@@ -37,14 +37,14 @@ mod atomic_waker;
 mod entry;
 mod handle;
 mod now;
-pub mod park;
+pub(crate) mod park;
 mod registration;
 mod stack;
 
-pub use self::atomic_waker::AtomicWaker;
 pub use self::handle::{set_default, Handle};
 pub use self::now::{Now, SystemNow};
 
+pub(crate) use self::atomic_waker::AtomicWaker;
 pub(crate) use self::handle::HandlePriv;
 pub(crate) use self::registration::Registration;
 

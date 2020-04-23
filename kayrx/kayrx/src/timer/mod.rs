@@ -33,25 +33,27 @@
 //!
 //! [`Delay`]: struct.Delay.html
 //! [`DelayQueue`]: struct.DelayQueue.html
-//! [`Throttle`]: throttle::Throttle
+//! [`Throttle`]: throttle::Throttle.html
 //! [`Timeout`]: struct.Timeout.html
 //! [`Interval`]: struct.Interval.html
-//! [`Timer`]: timer::Timer
+//! [`Timer`]: timer::Timer.html
 
-pub mod clock;
 pub mod delay_queue;
-pub mod driver;
-#[cfg(feature = "async-traits")]
-pub mod throttle;
-pub mod timeout;
-pub mod utils;
+pub(crate) mod utils;
 
 mod atomic;
+mod clock;
 mod delay;
+mod driver;
 mod error;
 mod interval;
+mod throttle;
+mod timeout;
 mod wheel;
 
+pub use self::clock::{now, with_default, Clock, Now};
+pub use self::driver::*;
+pub use self::throttle::Throttle;
 pub use delay::Delay;
 #[doc(inline)]
 pub use delay_queue::DelayQueue;
@@ -59,7 +61,7 @@ pub use driver::{set_default, Timer};
 pub use error::Error;
 pub use interval::Interval;
 #[doc(inline)]
-pub use timeout::Timeout;
+pub use timeout::{Elapsed, Timeout};
 
 use std::time::{Duration, Instant};
 

@@ -6,7 +6,6 @@
 
 use crate::timer::clock::now;
 use crate::timer::Delay;
-#[cfg(feature = "async-traits")]
 use futures_core::ready;
 use std::fmt;
 use std::future::Future;
@@ -18,7 +17,7 @@ use std::time::{Duration, Instant};
 ///
 /// If the future or stream completes before the timeout has expired, then
 /// `Timeout` returns the completed value. Otherwise, `Timeout` returns an
-/// [`Error`].
+/// `Error`
 ///
 /// # Futures and Streams
 ///
@@ -32,9 +31,6 @@ use std::time::{Duration, Instant};
 ///
 /// // Wrap the future with a `Timeout` set to expire in 10 milliseconds.
 /// process.timeout(Duration::from_millis(10)).await?;
-/// # Ok(())
-/// # }
-/// ```
 ///
 /// # Cancelation
 ///
@@ -44,7 +40,6 @@ use std::time::{Duration, Instant};
 /// The original future or stream may be obtained by calling [`Timeout::into_inner`]. This
 /// consumes the `Timeout`.
 ///
-/// [`Error`]: struct.Error.html
 /// [`Timeout::into_inner`]: struct.Timeout.html#method.into_iter
 #[must_use = "futures do nothing unless you `.await` or poll them"]
 #[derive(Debug)]
@@ -63,7 +58,7 @@ impl<T> Timeout<T> {
     ///
     /// The exact behavior depends on if `value` is a `Future` or a `Stream`.
     ///
-    /// See [type] level documentation for more details.
+    /// See `type` level documentation for more details.
     ///
     pub fn new(value: T, timeout: Duration) -> Timeout<T> {
         let delay = Delay::new_timeout(now() + timeout, timeout);
@@ -136,7 +131,6 @@ where
     }
 }
 
-#[cfg(feature = "async-traits")]
 impl<T> futures_core::Stream for Timeout<T>
 where
     T: futures_core::Stream,

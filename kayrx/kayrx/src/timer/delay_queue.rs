@@ -724,7 +724,6 @@ impl<T> DelayQueue<T> {
 // We never put `T` in a `Pin`...
 impl<T> Unpin for DelayQueue<T> {}
 
-#[cfg(feature = "async-traits")]
 impl<T> futures_core::Stream for DelayQueue<T> {
     // DelayQueue seems much more specific, where a user may care that it
     // has reached capacity, so return those errors instead of panicking.

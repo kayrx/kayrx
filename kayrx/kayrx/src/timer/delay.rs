@@ -79,7 +79,6 @@ impl Delay {
     }
 
     // Used by `Timeout<Stream>`
-    #[cfg(feature = "async-traits")]
     pub(crate) fn reset_timeout(&mut self) {
         self.registration.reset_timeout();
     }
@@ -91,7 +90,6 @@ impl Delay {
     }
 }
 
-#[cfg(feature = "async-traits")]
 impl futures_core::FusedFuture for Delay {
     fn is_terminated(&self) -> bool {
         self.is_elapsed()
