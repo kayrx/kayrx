@@ -40,10 +40,10 @@
 
 pub mod clock;
 pub mod delay_queue;
+pub mod driver;
 #[cfg(feature = "async-traits")]
 pub mod throttle;
 pub mod timeout;
-pub mod driver;
 pub mod utils;
 
 mod atomic;
@@ -55,11 +55,11 @@ mod wheel;
 pub use delay::Delay;
 #[doc(inline)]
 pub use delay_queue::DelayQueue;
+pub use driver::{set_default, Timer};
 pub use error::Error;
 pub use interval::Interval;
 #[doc(inline)]
 pub use timeout::Timeout;
-pub use driver::{set_default, Timer};
 
 use std::time::{Duration, Instant};
 

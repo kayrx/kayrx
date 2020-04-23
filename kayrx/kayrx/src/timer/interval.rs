@@ -92,7 +92,7 @@ impl Interval {
     ///     // approximately 30ms have elapsed.
     /// }
     /// ```
-    #[allow(clippy::should_implement_trait)] 
+    #[allow(clippy::should_implement_trait)]
     pub async fn next(&mut self) -> Option<Instant> {
         poll_fn(|cx| self.poll_next(cx)).await
     }

@@ -28,7 +28,7 @@ use std::time::{Duration, Instant};
 /// to take the entire timeout before returning an error.
 ///
 /// In order to set an upper bound on the processing of the *entire* stream,
-/// then a timeout should be set on the future that processes the stream. 
+/// then a timeout should be set on the future that processes the stream.
 ///
 /// // Wrap the future with a `Timeout` set to expire in 10 milliseconds.
 /// process.timeout(Duration::from_millis(10)).await?;

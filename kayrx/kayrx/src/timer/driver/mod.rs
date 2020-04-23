@@ -32,36 +32,35 @@
 
 // This allows the usage of the old `Now` trait.
 #![allow(deprecated)]
-pub mod park;
-mod atomic_waker;
 mod atomic_stack;
+mod atomic_waker;
 mod entry;
 mod handle;
 mod now;
+pub mod park;
 mod registration;
 mod stack;
 
+pub use self::atomic_waker::AtomicWaker;
 pub use self::handle::{set_default, Handle};
 pub use self::now::{Now, SystemNow};
-pub use self::atomic_waker::AtomicWaker;
 
 pub(crate) use self::handle::HandlePriv;
 pub(crate) use self::registration::Registration;
 
+use self::atomic_stack::AtomicStack;
+use self::entry::Entry;
+use self::park::{Park, ParkThread, Unpark};
+use self::stack::Stack;
 use crate::timer::atomic::AtomicU64;
 use crate::timer::wheel;
 use crate::timer::Error;
-use self::park::{Park, ParkThread, Unpark};
-use self::atomic_stack::AtomicStack;
-use self::entry::Entry;
-use self::stack::Stack;
 use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering::SeqCst;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use std::usize;
 use std::{cmp, fmt};
-
 
 /// Timer implementation that drives [`Delay`], [`Interval`], and [`Timeout`].
 ///

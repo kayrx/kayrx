@@ -1,8 +1,8 @@
-use std::sync::atomic::{self, AtomicUsize};
+use std::cell::UnsafeCell;
 use std::fmt;
 use std::sync::atomic::Ordering::{AcqRel, Acquire, Release};
+use std::sync::atomic::{self, AtomicUsize};
 use std::task::Waker;
-use std::cell::UnsafeCell;
 
 macro_rules! debug {
     ($($t:tt)*) => {

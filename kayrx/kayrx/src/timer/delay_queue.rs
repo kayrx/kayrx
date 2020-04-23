@@ -690,7 +690,8 @@ impl<T> DelayQueue<T> {
                     ready!(Pin::new(&mut *delay).poll(cx));
                 }
 
-                let now = crate::timer::ms(delay.deadline() - self.start, crate::timer::Round::Down);
+                let now =
+                    crate::timer::ms(delay.deadline() - self.start, crate::timer::Round::Down);
 
                 self.poll = wheel::Poll::new(now);
             }
