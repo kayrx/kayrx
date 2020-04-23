@@ -1,65 +1,57 @@
-use crate::timer::driver::Registration;
-use crate::timer::{Duration, Instant};
-
+use crate::timer::driver::{HandlePriv, Registration};
+use futures_core::ready;
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{self, Poll};
+use std::time::{Duration, Instant};
 
-macro_rules! ready {
-    ($e:expr $(,)?) => {
-        match $e {
-            std::task::Poll::Ready(t) => t,
-            std::task::Poll::Pending => return std::task::Poll::Pending,
-        }
-    };
-}
-
-/// Wait until `deadline` is reached.
+/// A future that completes at a specified instant in time.
 ///
-/// No work is performed while awaiting on the delay to complete. The delay
-/// operates at millisecond granularity and should not be used for tasks that
-/// require high-resolution timers.
+/// Instances of `Delay` perform no work and complete with `()` once the
+/// specified deadline has been reached.
+///
+/// `Delay` has a resolution of one millisecond and should not be used for tasks
+/// that require high-resolution timers.
 ///
 /// # Cancellation
 ///
-/// Canceling a delay is done by dropping the returned future. No additional
-/// cleanup work is required.
-pub fn delay_until(deadline: Instant) -> Delay {
-    let registration = Registration::new(deadline, Duration::from_millis(0));
-    Delay { registration }
-}
-
-/// Wait until `duration` has elapsed.
+/// Canceling a `Delay` is done by dropping the value. No additional cleanup or
+/// other work is required.
 ///
-/// Equivalent to `delay_until(Instant::now() + duration)`. An asynchronous
-/// analog to `std::thread::sleep`.
-///
-/// No work is performed while awaiting on the delay to complete. The delay
-/// operates at millisecond granularity and should not be used for tasks that
-/// require high-resolution timers.
-///
-/// # Cancellation
-///
-/// Canceling a delay is done by dropping the returned future. No additional
-/// cleanup work is required.
-pub fn delay_for(duration: Duration) -> Delay {
-    delay_until(Instant::now() + duration)
-}
-
-/// Future returned by [`delay_until`](delay_until) and
-/// [`delay_for`](delay_for).
+/// [`new`]: #method.new
 #[derive(Debug)]
-#[must_use = "futures do nothing unless you `.await` or poll them"]
 pub struct Delay {
-    /// The link between the `Delay` instance and the timer that drives it.
+    /// The link between the `Delay` instance at the timer that drives it.
     ///
     /// This also stores the `deadline` value.
     registration: Registration,
 }
 
 impl Delay {
+    /// Create a new `Delay` instance that elapses at `deadline`.
+    ///
+    /// Only millisecond level resolution is guaranteed. There is no guarantee
+    /// as to how the sub-millisecond portion of `deadline` will be handled.
+    /// `Delay` should not be used for high-resolution timer use cases.
+    pub(crate) fn new(deadline: Instant) -> Delay {
+        let registration = Registration::new(deadline, Duration::from_millis(0));
+
+        Delay { registration }
+    }
+
     pub(crate) fn new_timeout(deadline: Instant, duration: Duration) -> Delay {
         let registration = Registration::new(deadline, duration);
+        Delay { registration }
+    }
+
+    pub(crate) fn new_with_handle(
+        deadline: Instant,
+        duration: Duration,
+        handle: HandlePriv,
+    ) -> Delay {
+        let mut registration = Registration::new(deadline, duration);
+        registration.register_with(handle);
+
         Delay { registration }
     }
 
@@ -85,12 +77,34 @@ impl Delay {
     pub fn reset(&mut self, deadline: Instant) {
         self.registration.reset(deadline);
     }
+
+    // Used by `Timeout<Stream>`
+    #[cfg(feature = "async-traits")]
+    pub(crate) fn reset_timeout(&mut self) {
+        self.registration.reset_timeout();
+    }
+
+    /// Register the delay with the timer instance for the current execution
+    /// context.
+    fn register(&mut self) {
+        self.registration.register();
+    }
+}
+
+#[cfg(feature = "async-traits")]
+impl futures_core::FusedFuture for Delay {
+    fn is_terminated(&self) -> bool {
+        self.is_elapsed()
+    }
 }
 
 impl Future for Delay {
     type Output = ();
 
-    fn poll(self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> Poll<Self::Output> {
+    fn poll(mut self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> Poll<Self::Output> {
+        // Ensure the `Delay` instance is associated with a timer.
+        self.register();
+
         // `poll_elapsed` can return an error in two cases:
         //
         // - AtCapacity: this is a pathlogical case where far too many

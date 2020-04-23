@@ -4,19 +4,24 @@
 //!
 //! [`DelayQueue`]: struct.DelayQueue.html
 
-use crate::timer::clock::now;
-use crate::timer::driver::Handle;
 use crate::timer::wheel::{self, Wheel};
-use crate::timer::{Delay, Error};
+use crate::timer::{delay_until, Delay, Duration, Error, Instant};
 
-use futures_core::ready;
 use slab::Slab;
 use std::cmp;
 use std::future::Future;
 use std::marker::PhantomData;
 use std::pin::Pin;
 use std::task::{self, Poll};
-use std::time::{Duration, Instant};
+
+macro_rules! ready {
+    ($e:expr $(,)?) => {
+        match $e {
+            std::task::Poll::Ready(t) => t,
+            std::task::Poll::Pending => return std::task::Poll::Pending,
+        }
+    };
+}
 
 /// A queue of delayed elements.
 ///
@@ -72,12 +77,13 @@ use std::time::{Duration, Instant};
 /// ```rust,no_run
 /// use kayrx::timer::{delay_queue, DelayQueue, Error};
 ///
-/// use futures_core::ready;
+/// use futures::ready;
 /// use std::collections::HashMap;
 /// use std::task::{Context, Poll};
 /// use std::time::Duration;
-/// # type CacheKey = String;
-/// # type Value = String;
+///
+/// type CacheKey = String;
+/// type Value = String;
 ///
 /// struct Cache {
 ///     entries: HashMap<CacheKey, (Value, delay_queue::Key)>,
@@ -106,7 +112,7 @@ use std::time::{Duration, Instant};
 ///     }
 ///
 ///     fn poll_purge(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Error>> {
-///         while let Some(res) = ready!(self.expirations.poll_next(cx)) {
+///         while let Some(res) = ready!(self.expirations.poll_expired(cx)) {
 ///             let entry = res?;
 ///             self.entries.remove(entry.get_ref());
 ///         }
@@ -128,9 +134,6 @@ use std::time::{Duration, Instant};
 /// [`reserve`]: #method.reserve
 #[derive(Debug)]
 pub struct DelayQueue<T> {
-    /// Handle to the timer driving the `DelayQueue`
-    handle: Handle,
-
     /// Stores data associated with entries
     slab: Slab<Data<T>>,
 
@@ -217,36 +220,12 @@ impl<T> DelayQueue<T> {
     /// # Examples
     ///
     /// ```rust
-    /// # use kayrx::timer::DelayQueue;
+    /// use kayrx::timer::DelayQueue;
+    ///
     /// let delay_queue: DelayQueue<u32> = DelayQueue::new();
     /// ```
     pub fn new() -> DelayQueue<T> {
         DelayQueue::with_capacity(0)
-    }
-
-    /// Create a new, empty, `DelayQueue` backed by the specified timer.
-    ///
-    /// The queue will not allocate storage until items are inserted into it.
-    ///
-    /// # Examples
-    ///
-    /// ```rust,no_run
-    /// # use kayrx::timer::DelayQueue;
-    /// use kayrx::timer::timer::Handle;
-    ///
-    /// let handle = Handle::default();
-    /// let delay_queue: DelayQueue<u32> = DelayQueue::with_capacity_and_handle(0, &handle);
-    /// ```
-    pub fn with_capacity_and_handle(capacity: usize, handle: &Handle) -> DelayQueue<T> {
-        DelayQueue {
-            handle: handle.clone(),
-            wheel: Wheel::new(),
-            slab: Slab::with_capacity(capacity),
-            expired: Stack::default(),
-            delay: None,
-            poll: wheel::Poll::new(0),
-            start: now(),
-        }
     }
 
     /// Create a new, empty, `DelayQueue` with the specified capacity.
@@ -258,20 +237,36 @@ impl<T> DelayQueue<T> {
     /// # Examples
     ///
     /// ```rust
-    /// # use kayrx::timer::DelayQueue;
-    /// # use std::time::Duration;
-    /// let mut delay_queue = DelayQueue::with_capacity(10);
+    /// use kayrx::timer::DelayQueue;
+    /// use std::time::Duration;
+    /// use kayrx::karx;
     ///
-    /// // These insertions are done without further allocation
-    /// for i in 0..10 {
-    ///     delay_queue.insert(i, Duration::from_secs(i));
+    /// fn main() {
+    ///     kayrx::karx::exec(async {
+    ///
+    ///          let mut delay_queue = DelayQueue::with_capacity(10);
+    ///     
+    ///          // These insertions are done without further allocation
+    ///          for i in 0..10 {
+    ///              delay_queue.insert(i, Duration::from_secs(i));
+    ///          }
+    ///     
+    ///          // This will make the queue allocate additional storage
+    ///          delay_queue.insert(11, Duration::from_secs(11));
+    ///
+    ///     });
     /// }
     ///
-    /// // This will make the queue allocate additional storage
-    /// delay_queue.insert(11, Duration::from_secs(11));
     /// ```
     pub fn with_capacity(capacity: usize) -> DelayQueue<T> {
-        DelayQueue::with_capacity_and_handle(capacity, &Handle::default())
+        DelayQueue {
+            wheel: Wheel::new(),
+            slab: Slab::with_capacity(capacity),
+            expired: Stack::default(),
+            delay: None,
+            poll: wheel::Poll::new(0),
+            start: Instant::now(),
+        }
     }
 
     /// Insert `value` into the queue set to expire at a specific instant in
@@ -302,16 +297,21 @@ impl<T> DelayQueue<T> {
     /// Basic usage
     ///
     /// ```rust
-    /// use kayrx::timer::DelayQueue;
-    /// use std::time::{Instant, Duration};
+    /// use kayrx::timer::{DelayQueue, Duration, Instant};
     ///
-    /// let mut delay_queue = DelayQueue::new();
-    /// let key = delay_queue.insert_at(
-    ///     "foo", Instant::now() + Duration::from_secs(5));
+    /// use kayrx::karx;
     ///
-    /// // Remove the entry
-    /// let item = delay_queue.remove(&key);
-    /// assert_eq!(*item.get_ref(), "foo");
+    /// fn main() {
+    ///     kayrx::karx::exec(async {
+    ///          let mut delay_queue = DelayQueue::new();
+    ///          let key = delay_queue.insert_at(
+    ///              "foo", Instant::now() + Duration::from_secs(5));
+    ///     
+    ///          // Remove the entry
+    ///          let item = delay_queue.remove(&key);
+    ///          assert_eq!(*item.get_ref(), "foo");
+    ///      });
+    /// }
     /// ```
     ///
     /// [`poll`]: #method.poll
@@ -345,7 +345,7 @@ impl<T> DelayQueue<T> {
         };
 
         if should_set_delay {
-            self.delay = Some(self.handle.delay(self.start + Duration::from_millis(when)));
+            self.delay = Some(delay_until(self.start + Duration::from_millis(when)));
         }
 
         Key::new(key)
@@ -354,7 +354,7 @@ impl<T> DelayQueue<T> {
     /// Attempt to pull out the next value of the delay queue, registering the
     /// current task for wakeup if the value is not yet available, and returning
     /// None if the queue is exhausted.
-    pub fn poll_next(
+    pub fn poll_expired(
         &mut self,
         cx: &mut task::Context<'_>,
     ) -> Poll<Option<Result<Expired<T>, Error>>> {
@@ -405,13 +405,18 @@ impl<T> DelayQueue<T> {
     /// ```rust
     /// use kayrx::timer::DelayQueue;
     /// use std::time::Duration;
+    /// use kayrx::karx;
     ///
-    /// let mut delay_queue = DelayQueue::new();
-    /// let key = delay_queue.insert("foo", Duration::from_secs(5));
-    ///
-    /// // Remove the entry
-    /// let item = delay_queue.remove(&key);
-    /// assert_eq!(*item.get_ref(), "foo");
+    /// fn main() {
+    ///          kayrx::karx::exec(async {
+    ///          let mut delay_queue = DelayQueue::new();
+    ///          let key = delay_queue.insert("foo", Duration::from_secs(5));
+    ///     
+    ///          // Remove the entry
+    ///          let item = delay_queue.remove(&key);
+    ///          assert_eq!(*item.get_ref(), "foo");
+    ///      });
+    /// }
     /// ```
     ///
     /// [`poll`]: #method.poll
@@ -420,7 +425,7 @@ impl<T> DelayQueue<T> {
     /// [`Key`]: struct.Key.html
     /// [type]: #
     pub fn insert(&mut self, value: T, timeout: Duration) -> Key {
-        self.insert_at(value, now() + timeout)
+        self.insert_at(value, Instant::now() + timeout)
     }
 
     fn insert_idx(&mut self, when: u64, key: usize) {
@@ -455,13 +460,18 @@ impl<T> DelayQueue<T> {
     /// ```rust
     /// use kayrx::timer::DelayQueue;
     /// use std::time::Duration;
+    /// use kayrx::karx;
     ///
-    /// let mut delay_queue = DelayQueue::new();
-    /// let key = delay_queue.insert("foo", Duration::from_secs(5));
-    ///
-    /// // Remove the entry
-    /// let item = delay_queue.remove(&key);
-    /// assert_eq!(*item.get_ref(), "foo");
+    /// fn main() {
+    ///          kayrx::karx::exec(async {
+    ///              let mut delay_queue = DelayQueue::new();
+    ///              let key = delay_queue.insert("foo", Duration::from_secs(5));
+    ///         
+    ///              // Remove the entry
+    ///              let item = delay_queue.remove(&key);
+    ///              assert_eq!(*item.get_ref(), "foo");
+    ///          });
+    /// }
     /// ```
     pub fn remove(&mut self, key: &Key) -> Expired<T> {
         use crate::timer::wheel::Stack;
@@ -501,17 +511,21 @@ impl<T> DelayQueue<T> {
     /// Basic usage
     ///
     /// ```rust
-    /// use kayrx::timer::DelayQueue;
-    /// use std::time::{Duration, Instant};
+    /// use kayrx::timer::{DelayQueue, Duration, Instant};
+    /// use kayrx::karx;
     ///
-    /// let mut delay_queue = DelayQueue::new();
-    /// let key = delay_queue.insert("foo", Duration::from_secs(5));
-    ///
-    /// // "foo" is scheduled to be returned in 5 seconds
-    ///
-    /// delay_queue.reset_at(&key, Instant::now() + Duration::from_secs(10));
-    ///
-    /// // "foo"is now scheduled to be returned in 10 seconds
+    /// fn main() {
+    ///          kayrx::karx::exec(async {
+    ///             let mut delay_queue = DelayQueue::new();
+    ///             let key = delay_queue.insert("foo", Duration::from_secs(5));
+    ///     
+    ///             // "foo" is scheduled to be returned in 5 seconds
+    ///     
+    ///             delay_queue.reset_at(&key, Instant::now() + Duration::from_secs(10));
+    ///     
+    ///             // "foo"is now scheduled to be returned in 10 seconds
+    ///         });
+    /// }
     /// ```
     pub fn reset_at(&mut self, key: &Key, when: Instant) {
         self.wheel.remove(&key.index, &mut self.slab);
@@ -542,7 +556,7 @@ impl<T> DelayQueue<T> {
     /// of an `Instant`.
     ///
     /// The item remains in the queue but the delay is set to expire after
-    /// `timeout`.  If `timeout` is zero, then the item is immediately made
+    /// `timeout`. If `timeout` is zero, then the item is immediately made
     /// available to the caller.
     ///
     /// # Panics
@@ -557,18 +571,23 @@ impl<T> DelayQueue<T> {
     /// ```rust
     /// use kayrx::timer::DelayQueue;
     /// use std::time::Duration;
+    /// use kayrx::karx;
     ///
-    /// let mut delay_queue = DelayQueue::new();
-    /// let key = delay_queue.insert("foo", Duration::from_secs(5));
-    ///
-    /// // "foo" is scheduled to be returned in 5 seconds
-    ///
-    /// delay_queue.reset(&key, Duration::from_secs(10));
-    ///
-    /// // "foo"is now scheduled to be returned in 10 seconds
+    /// fn main() {
+    ///          kayrx::karx::exec(async {
+    ///             let mut delay_queue = DelayQueue::new();
+    ///             let key = delay_queue.insert("foo", Duration::from_secs(5));
+    ///     
+    ///             // "foo" is scheduled to be returned in 5 seconds
+    ///     
+    ///             delay_queue.reset(&key, Duration::from_secs(10));
+    ///     
+    ///             // "foo"is now scheduled to be returned in 10 seconds
+    ///         });
+    /// }
     /// ```
     pub fn reset(&mut self, key: &Key, timeout: Duration) {
-        self.reset_at(key, now() + timeout);
+        self.reset_at(key, Instant::now() + timeout);
     }
 
     /// Clears the queue, removing all items.
@@ -584,16 +603,21 @@ impl<T> DelayQueue<T> {
     /// ```rust
     /// use kayrx::timer::DelayQueue;
     /// use std::time::Duration;
+    /// use kayrx::karx;
     ///
-    /// let mut delay_queue = DelayQueue::new();
-    ///
-    /// delay_queue.insert("foo", Duration::from_secs(5));
-    ///
-    /// assert!(!delay_queue.is_empty());
-    ///
-    /// delay_queue.clear();
-    ///
-    /// assert!(delay_queue.is_empty());
+    /// fn main() {
+    ///          kayrx::karx::exec(async {
+    ///              let mut delay_queue = DelayQueue::new();
+    ///         
+    ///              delay_queue.insert("foo", Duration::from_secs(5));
+    ///         
+    ///              assert!(!delay_queue.is_empty());
+    ///         
+    ///              delay_queue.clear();
+    ///         
+    ///              assert!(delay_queue.is_empty());
+    ///          });
+    /// }
     /// ```
     pub fn clear(&mut self) {
         self.slab.clear();
@@ -614,6 +638,28 @@ impl<T> DelayQueue<T> {
     /// ```
     pub fn capacity(&self) -> usize {
         self.slab.capacity()
+    }
+
+    /// Returns the number of elements currently in the queue.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use kayrx::timer::DelayQueue;
+    /// use std::time::Duration;
+    /// use kayrx::karx;
+    ///
+    /// fn main() {
+    ///          kayrx::karx::exec(async {
+    ///              let mut delay_queue: DelayQueue<i32> = DelayQueue::with_capacity(10);
+    ///              assert_eq!(delay_queue.len(), 0);
+    ///              delay_queue.insert(3, Duration::from_secs(5));
+    ///              assert_eq!(delay_queue.len(), 1);
+    ///          });
+    /// }
+    /// ```
+    pub fn len(&self) -> usize {
+        self.slab.len()
     }
 
     /// Reserve capacity for at least `additional` more items to be queued
@@ -638,13 +684,18 @@ impl<T> DelayQueue<T> {
     /// ```
     /// use kayrx::timer::DelayQueue;
     /// use std::time::Duration;
+    /// use kayrx::karx;
     ///
-    /// let mut delay_queue = DelayQueue::new();
-    ///
-    /// delay_queue.insert("hello", Duration::from_secs(10));
-    /// delay_queue.reserve(10);
-    ///
-    /// assert!(delay_queue.capacity() >= 11);
+    /// fn main() {
+    ///          kayrx::karx::exec(async {
+    ///              let mut delay_queue = DelayQueue::new();
+    ///         
+    ///              delay_queue.insert("hello", Duration::from_secs(10));
+    ///              delay_queue.reserve(10);
+    ///         
+    ///              assert!(delay_queue.capacity() >= 11);
+    ///          });
+    /// }
     /// ```
     pub fn reserve(&mut self, additional: usize) {
         self.slab.reserve(additional);
@@ -660,12 +711,17 @@ impl<T> DelayQueue<T> {
     /// ```
     /// use kayrx::timer::DelayQueue;
     /// use std::time::Duration;
+    /// use kayrx::karx;
     ///
-    /// let mut delay_queue = DelayQueue::new();
-    /// assert!(delay_queue.is_empty());
-    ///
-    /// delay_queue.insert("hello", Duration::from_secs(5));
-    /// assert!(!delay_queue.is_empty());
+    /// fn main() {
+    ///          kayrx::karx::exec(async {
+    ///              let mut delay_queue = DelayQueue::new();
+    ///              assert!(delay_queue.is_empty());
+    ///         
+    ///              delay_queue.insert("hello", Duration::from_secs(5));
+    ///              assert!(!delay_queue.is_empty());
+    ///          });
+    /// }
     /// ```
     pub fn is_empty(&self) -> bool {
         self.slab.is_empty()
@@ -690,7 +746,8 @@ impl<T> DelayQueue<T> {
                     ready!(Pin::new(&mut *delay).poll(cx));
                 }
 
-                let now = crate::timer::ms(delay.deadline() - self.start, crate::timer::Round::Down);
+                let now =
+                    crate::timer::ms(delay.deadline() - self.start, crate::timer::Round::Down);
 
                 self.poll = wheel::Poll::new(now);
             }
@@ -702,7 +759,7 @@ impl<T> DelayQueue<T> {
             }
 
             if let Some(deadline) = self.next_deadline() {
-                self.delay = Some(self.handle.delay(deadline));
+                self.delay = Some(delay_until(deadline));
             } else {
                 return Poll::Ready(None);
             }
@@ -723,20 +780,19 @@ impl<T> DelayQueue<T> {
 // We never put `T` in a `Pin`...
 impl<T> Unpin for DelayQueue<T> {}
 
-#[cfg(feature = "async-traits")]
+impl<T> Default for DelayQueue<T> {
+    fn default() -> DelayQueue<T> {
+        DelayQueue::new()
+    }
+}
+
 impl<T> futures_core::Stream for DelayQueue<T> {
     // DelayQueue seems much more specific, where a user may care that it
     // has reached capacity, so return those errors instead of panicking.
     type Item = Result<Expired<T>, Error>;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> Poll<Option<Self::Item>> {
-        DelayQueue::poll_next(self.get_mut(), cx)
-    }
-}
-
-impl<T> Default for DelayQueue<T> {
-    fn default() -> DelayQueue<T> {
-        DelayQueue::new()
+        DelayQueue::poll_expired(self.get_mut(), cx)
     }
 }
 

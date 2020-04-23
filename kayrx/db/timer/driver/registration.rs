@@ -1,8 +1,8 @@
-use crate::timer::driver::{Entry, HandlePriv};
-use crate::timer::Error;
+use crate::timer::driver::Entry;
+use crate::timer::{Duration, Error, Instant};
+
 use std::sync::Arc;
 use std::task::{self, Poll};
-use std::time::{Duration, Instant};
 
 /// Registration with a timer.
 ///
@@ -15,11 +15,8 @@ pub(crate) struct Registration {
 
 impl Registration {
     pub(crate) fn new(deadline: Instant, duration: Duration) -> Registration {
-        fn is_send<T: Send + Sync>() {}
-        is_send::<Registration>();
-
         Registration {
-            entry: Arc::new(Entry::new(deadline, duration)),
+            entry: Entry::new(deadline, duration),
         }
     }
 
@@ -27,30 +24,11 @@ impl Registration {
         self.entry.time_ref().deadline
     }
 
-    pub(crate) fn register(&mut self) {
-        if !self.entry.is_registered() {
-            Entry::register(&mut self.entry)
-        }
-    }
-
-    pub(crate) fn register_with(&mut self, handle: HandlePriv) {
-        Entry::register_with(&mut self.entry, handle)
-    }
-
     pub(crate) fn reset(&mut self, deadline: Instant) {
         unsafe {
             self.entry.time_mut().deadline = deadline;
         }
-        Entry::reset(&mut self.entry);
-    }
 
-    // Used by `Timeout<Stream>`
-    #[cfg(feature = "async-traits")]
-    pub(crate) fn reset_timeout(&mut self) {
-        let deadline = crate::timer::clock::now() + self.entry.time_ref().duration;
-        unsafe {
-            self.entry.time_mut().deadline = deadline;
-        }
         Entry::reset(&mut self.entry);
     }
 

@@ -1,77 +1,34 @@
 //! Slow down a stream by enforcing a delay between items.
 
-use crate::timer::{Delay, Duration, Instant};
+use crate::timer::{clock, Delay};
+use futures_core::ready;
 use futures_core::Stream;
-
-use std::future::Future;
-use std::marker::Unpin;
-use std::pin::Pin;
-use std::task::{self, Poll};
-
-use pin_project_lite::pin_project;
-
-macro_rules! ready {
-    ($e:expr $(,)?) => {
-        match $e {
-            std::task::Poll::Ready(t) => t,
-            std::task::Poll::Pending => return std::task::Poll::Pending,
-        }
-    };
-}
+use std::{
+    future::Future,
+    marker::Unpin,
+    pin::Pin,
+    task::{self, Poll},
+    time::Duration,
+};
 
 /// Slow down a stream by enforcing a delay between items.
-/// They will be produced not more often than the specified interval.
-///
-/// # Example
-///
-/// Create a throttled stream.
-/// ```rust,norun
-/// use std::time::Duration;
-/// use futures_util::stream::StreamExt;
-/// use kayrx::timer::throttle;
-///
-/// # async fn dox() {
-/// let mut item_stream = throttle(Duration::from_secs(2), futures::stream::repeat("one"));
-///
-/// loop {
-///     // The string will be produced at most every 2 seconds
-///     println!("{:?}", item_stream.next().await);
-/// }
-/// # }
-/// ```
-pub fn throttle<T>(duration: Duration, stream: T) -> Throttle<T>
-where
-    T: Stream,
-{
-    let delay = if duration == Duration::from_millis(0) {
-        None
-    } else {
-        Some(Delay::new_timeout(Instant::now() + duration, duration))
-    };
-
-    Throttle {
-        delay,
-        duration,
-        has_delayed: true,
-        stream,
-    }
+#[derive(Debug)]
+#[must_use = "streams do nothing unless polled"]
+pub struct Throttle<T> {
+    delay: Delay,
+    /// Set to true when `delay` has returned ready, but `stream` hasn't.
+    has_delayed: bool,
+    stream: T,
 }
 
-pin_project! {
-    /// Stream for the [`throttle`](throttle) function.
-    #[derive(Debug)]
-    #[must_use = "streams do nothing unless polled"]
-    pub struct Throttle<T> {
-        // `None` when duration is zero.
-        delay: Option<Delay>,
-        duration: Duration,
-
-        // Set to true when `delay` has returned ready, but `stream` hasn't.
-        has_delayed: bool,
-
-        // The stream to throttle
-        #[pin]
-        stream: T,
+impl<T> Throttle<T> {
+    /// Slow down a stream by enforcing a delay between items.
+    pub fn new(stream: T, duration: Duration) -> Self {
+        Self {
+            delay: Delay::new_timeout(clock::now() + duration, duration),
+            has_delayed: true,
+            stream,
+        }
     }
 }
 
@@ -105,22 +62,23 @@ impl<T: Stream> Stream for Throttle<T> {
     type Item = T::Item;
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> Poll<Option<Self::Item>> {
-        if !self.has_delayed && self.delay.is_some() {
-            ready!(Pin::new(self.as_mut().project().delay.as_mut().unwrap()).poll(cx));
-            *self.as_mut().project().has_delayed = true;
-        }
-
-        let value = ready!(self.as_mut().project().stream.poll_next(cx));
-
-        if value.is_some() {
-            let dur = self.duration;
-            if let Some(ref mut delay) = self.as_mut().project().delay {
-                delay.reset(Instant::now() + dur);
+        unsafe {
+            if !self.has_delayed {
+                ready!(self.as_mut().map_unchecked_mut(|me| &mut me.delay).poll(cx));
+                self.as_mut().get_unchecked_mut().has_delayed = true;
             }
 
-            *self.as_mut().project().has_delayed = false;
-        }
+            let value = ready!(self
+                .as_mut()
+                .map_unchecked_mut(|me| &mut me.stream)
+                .poll_next(cx));
 
-        Poll::Ready(value)
+            if value.is_some() {
+                self.as_mut().get_unchecked_mut().delay.reset_timeout();
+                self.as_mut().get_unchecked_mut().has_delayed = false;
+            }
+
+            Poll::Ready(value)
+        }
     }
 }

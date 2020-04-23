@@ -1,107 +1,67 @@
-//! Timer implementation.
-//!
-//! This module contains the types needed to run a timer.
-//!
-//! The [`Timer`] type runs the timer logic. It holds all the necessary state
-//! to track all associated [`Delay`] instances and delivering notifications
-//! once the deadlines are reached.
-//!
-//! The [`Handle`] type is a reference to a [`Timer`] instance. This type is
-//! `Clone`, `Send`, and `Sync`. This type is used to create instances of
-//! [`Delay`].
-//!
-//! The [`Now`] trait describes how to get an [`Instant`] representing the
-//! current moment in time. [`SystemNow`] is the default implementation, where
-//! [`Now::now`] is implemented by calling [`Instant::now`].
-//!
-//! [`Timer`] is generic over [`Now`]. This allows the source of time to be
-//! customized. This ability is especially useful in tests and any environment
-//! where determinism is necessary.
-//!
-//! Note,  the [`Timer`]  need to be manually
-//! setup as the runtime comes pre-configured with a [`Timer`] instance.
-//!
-//! [`Timer`]: struct.Timer.html
-//! [`Handle`]: struct.Handle.html
-//! [`Delay`]: Delay
-//! [`Now`]: clock::Now
-//! [`Now::now`]: clock::Now::now
-//! [`SystemNow`]: struct.SystemNow.html
-//! [`Instant`]: std::time::Instant
-//! [`Instant::now`]: std::time::Instant::now
+//! Time driver
 
-// This allows the usage of the old `Now` trait.
-#![allow(deprecated)]
-pub mod park;
-mod atomic_waker;
 mod atomic_stack;
+mod atomic_waker;
+mod cell;
 mod entry;
 mod handle;
-mod now;
+mod park;
 mod registration;
 mod stack;
 
-pub use self::handle::{set_default, Handle};
-pub use self::now::{Now, SystemNow};
-pub use self::atomic_waker::AtomicWaker;
-
-pub(crate) use self::handle::HandlePriv;
-pub(crate) use self::registration::Registration;
-
-use crate::timer::atomic::AtomicU64;
-use crate::timer::wheel;
-use crate::timer::Error;
-use self::park::{Park, ParkThread, Unpark};
-use self::atomic_stack::AtomicStack;
-use self::entry::Entry;
-use self::stack::Stack;
-use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering::SeqCst;
+use std::sync::atomic::{AtomicU64, AtomicUsize};
 use std::sync::Arc;
-use std::time::{Duration, Instant};
 use std::usize;
 use std::{cmp, fmt};
 
+pub(crate) mod future;
+pub(crate) use self::handle::{set_default, Handle};
+pub(crate) use self::registration::Registration;
 
-/// Timer implementation that drives [`Delay`], [`Interval`], and [`Timeout`].
+use crate::timer::{wheel, Error};
+use crate::timer::{Clock, Duration, Instant};
+
+use self::atomic_stack::AtomicStack;
+use self::atomic_waker::AtomicWaker;
+use self::entry::Entry;
+use self::park::{Park, Unpark};
+use self::stack::Stack;
+
+/// Time implementation that drives [`Delay`], [`Interval`], and [`Timeout`].
 ///
-/// A `Timer` instance tracks the state necessary for managing time and
+/// A `Driver` instance tracks the state necessary for managing time and
 /// notifying the [`Delay`] instances once their deadlines are reached.
 ///
-/// It is expected that a single `Timer` instance manages many individual
-/// [`Delay`] instances. The `Timer` implementation is thread-safe and, as such,
-/// is able to handle callers from across threads.
+/// It is expected that a single instance manages many individual [`Delay`]
+/// instances. The `Driver` implementation is thread-safe and, as such, is able
+/// to handle callers from across threads.
 ///
-/// Callers do not use `Timer` directly to create [`Delay`] instances.  Instead,
-/// [`Handle`][Handle.struct] is used. A handle for the timer instance is obtained by calling
-/// [`handle`]. [`Handle`][Handle.struct] is the type that implements `Clone` and is `Send +
-/// Sync`.
-///
-/// After creating the `Timer` instance, the caller must repeatedly call
-/// [`turn`]. The timer will perform no work unless [`turn`] is called
+/// After creating the `Driver` instance, the caller must repeatedly call
+/// [`turn`]. The time driver will perform no work unless [`turn`] is called
 /// repeatedly.
 ///
-/// The `Timer` has a resolution of one millisecond. Any unit of time that falls
+/// The driver has a resolution of one millisecond. Any unit of time that falls
 /// between milliseconds are rounded up to the next millisecond.
 ///
-/// When the `Timer` instance is dropped, any outstanding [`Delay`] instance that
-/// has not elapsed will be notified with an error. At this point, calling
-/// `poll` on the [`Delay`] instance will result in `Err` being returned.
+/// When an instance is dropped, any outstanding [`Delay`] instance that has not
+/// elapsed will be notified with an error. At this point, calling `poll` on the
+/// [`Delay`] instance will result in `Err` being returned.
 ///
 /// # Implementation
 ///
-/// `Timer` is based on the [paper by Varghese and Lauck][paper].
+/// THe time driver is based on the [paper by Varghese and Lauck][paper].
 ///
 /// A hashed timing wheel is a vector of slots, where each slot handles a time
 /// slice. As time progresses, the timer walks over the slot for the current
 /// instant, and processes each entry for that slot. When the timer reaches the
 /// end of the wheel, it starts again at the beginning.
 ///
-/// The `Timer` implementation maintains six wheels arranged in a set of levels.
-/// As the levels go up, the slots of the associated wheel represent larger
-/// intervals of time. At each level, the wheel has 64 slots. Each slot covers a
-/// range of time equal to the wheel at the lower level. At level zero, each
-/// slot represents one millisecond of time.
+/// The implementation maintains six wheels arranged in a set of levels. As the
+/// levels go up, the slots of the associated wheel represent larger intervals
+/// of time. At each level, the wheel has 64 slots. Each slot covers a range of
+/// time equal to the wheel at the lower level. At level zero, each slot
+/// represents one millisecond of time.
 ///
 /// The wheels are:
 ///
@@ -113,42 +73,27 @@ use std::{cmp, fmt};
 /// * Level 5: 64 x ~12 day slots.
 ///
 /// When the timer processes entries at level zero, it will notify all the
-/// [`Delay`] instances as their deadlines have been reached. For all higher
+/// `Delay` instances as their deadlines have been reached. For all higher
 /// levels, all entries will be redistributed across the wheel at the next level
 /// down. Eventually, as time progresses, entries will [`Delay`] instances will
 /// either be canceled (dropped) or their associated entries will reach level
 /// zero and be notified.
-///
-/// [`Delay`]: struct.Delay.html
-/// [`Interval`]: struct.Interval.html
-/// [`Timeout`]: struct.Timeout.html
-/// [paper]: http://www.cs.columbia.edu/~nahum/w6998/papers/ton97-timing-wheels.pdf
-/// [`handle`]: #method.handle
-/// [`turn`]: #method.turn
-/// [Handle.struct]: struct.Handle.html
 #[derive(Debug)]
-pub struct Timer<T, N = SystemNow> {
+pub(crate) struct Driver<T> {
     /// Shared state
     inner: Arc<Inner>,
 
     /// Timer wheel
     wheel: wheel::Wheel<Stack>,
 
-    /// Thread parker. The `Timer` park implementation delegates to this.
+    /// Thread parker. The `Driver` park implementation delegates to this.
     park: T,
 
     /// Source of "now" instances
-    now: N,
+    clock: Clock,
 }
 
-/// Return value from the `turn` method on `Timer`.
-///
-/// Currently this value doesn't actually provide any functionality, but it may
-/// in the future give insight into what happened during `turn`.
-#[derive(Debug)]
-pub struct Turn(());
-
-/// Timer state shared between `Timer`, `Handle`, and `Registration`.
+/// Timer state shared between `Driver`, `Handle`, and `Registration`.
 pub(crate) struct Inner {
     /// The instant at which the timer started running.
     start: Instant,
@@ -169,56 +114,24 @@ pub(crate) struct Inner {
 /// Maximum number of timeouts the system can handle concurrently.
 const MAX_TIMEOUTS: usize = usize::MAX >> 1;
 
-// ===== impl Timer =====
+// ===== impl Driver =====
 
-impl<T> Timer<T>
+impl<T> Driver<T>
 where
     T: Park,
 {
-    /// Create a new `Timer` instance that uses `park` to block the current
-    /// thread.
-    ///
-    /// Once the timer has been created, a handle can be obtained using
-    /// [`handle`]. The handle is used to create `Delay` instances.
-    ///
-    /// Use `default` when constructing a `Timer` using the default `park`
-    /// instance.
-    ///
-    /// [`handle`]: #method.handle
-    pub fn new(park: T) -> Self {
-        Timer::new_with_now(park, SystemNow::new())
-    }
-}
-
-impl<T, N> Timer<T, N> {
-    /// Returns a reference to the underlying `Park` instance.
-    pub fn get_park(&self) -> &T {
-        &self.park
-    }
-
-    /// Returns a mutable reference to the underlying `Park` instance.
-    pub fn get_park_mut(&mut self) -> &mut T {
-        &mut self.park
-    }
-}
-
-impl<T, N> Timer<T, N>
-where
-    T: Park,
-    N: Now,
-{
-    /// Create a new `Timer` instance that uses `park` to block the current
+    /// Create a new `Driver` instance that uses `park` to block the current
     /// thread and `now` to get the current `Instant`.
     ///
     /// Specifying the source of time is useful when testing.
-    pub fn new_with_now(park: T, mut now: N) -> Self {
+    pub(crate) fn new(park: T, clock: Clock) -> Driver<T> {
         let unpark = Box::new(park.unpark());
 
-        Timer {
-            inner: Arc::new(Inner::new(now.now(), unpark)),
+        Driver {
+            inner: Arc::new(Inner::new(clock.now(), unpark)),
             wheel: wheel::Wheel::new(),
             park,
-            now,
+            clock,
         }
     }
 
@@ -228,36 +141,8 @@ where
     /// can either be created directly or the `Handle` instance can be passed to
     /// `with_default`, setting the timer as the default timer for the execution
     /// context.
-    pub fn handle(&self) -> Handle {
+    pub(crate) fn handle(&self) -> Handle {
         Handle::new(Arc::downgrade(&self.inner))
-    }
-
-    /// Performs one iteration of the timer loop.
-    ///
-    /// This function must be called repeatedly in order for the `Timer`
-    /// instance to make progress. This is where the work happens.
-    ///
-    /// The `Timer` will use the `Park` instance that was specified in [`new`]
-    /// to block the current thread until the next `Delay` instance elapses. One
-    /// call to `turn` results in at most one call to `park.park()`.
-    ///
-    /// # Return
-    ///
-    /// On success, `Ok(Turn)` is returned, where `Turn` is a placeholder type
-    /// that currently does nothing but may, in the future, have functions add
-    /// to provide information about the call to `turn`.
-    ///
-    /// If the call to `park.park()` fails, then `Err` is returned with the
-    /// error.
-    ///
-    /// [`new`]: #method.new
-    pub fn turn(&mut self, max_wait: Option<Duration>) -> Result<Turn, T::Error> {
-        match max_wait {
-            Some(timeout) => self.park_timeout(timeout)?,
-            None => self.park()?,
-        }
-
-        Ok(Turn(()))
     }
 
     /// Converts an `Expiration` to an `Instant`.
@@ -267,7 +152,10 @@ where
 
     /// Run timer related logic
     fn process(&mut self) {
-        let now = crate::timer::ms(self.now.now() - self.inner.start, crate::timer::Round::Down);
+        let now = crate::timer::ms(
+            self.clock.now() - self.inner.start,
+            crate::timer::Round::Down,
+        );
         let mut poll = wheel::Poll::new(now);
 
         while let Some(entry) = self.wheel.poll(&mut poll, &mut ()) {
@@ -340,16 +228,9 @@ where
     }
 }
 
-impl Default for Timer<ParkThread, SystemNow> {
-    fn default() -> Self {
-        Timer::new(ParkThread::new())
-    }
-}
-
-impl<T, N> Park for Timer<T, N>
+impl<T> Park for Driver<T>
 where
     T: Park,
-    N: Now,
 {
     type Unpark = T::Unpark;
     type Error = T::Error;
@@ -363,7 +244,7 @@ where
 
         match self.wheel.poll_at() {
             Some(when) => {
-                let now = self.now.now();
+                let now = self.clock.now();
                 let deadline = self.expiration_instant(when);
 
                 if deadline > now {
@@ -387,7 +268,7 @@ where
 
         match self.wheel.poll_at() {
             Some(when) => {
-                let now = self.now.now();
+                let now = self.clock.now();
                 let deadline = self.expiration_instant(when);
 
                 if deadline > now {
@@ -407,7 +288,7 @@ where
     }
 }
 
-impl<T, N> Drop for Timer<T, N> {
+impl<T> Drop for Driver<T> {
     fn drop(&mut self) {
         use std::u64;
 

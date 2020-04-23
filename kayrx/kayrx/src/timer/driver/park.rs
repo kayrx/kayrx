@@ -1,51 +1,17 @@
-//! Abstraction over blocking and unblocking the current thread.
-//!
-//! Provides an abstraction over blocking the current thread. This is similar to
-//! the park / unpark constructs provided by [`std`] but made generic. This
-//! allows embedding custom functionality to perform when the thread is blocked.
-//!
-//! A blocked [`Park`][p] instance is unblocked by calling [`unpark`] on its
-//! [`Unpark`][up] handle.
-//!
-//! The [`ParkThread`] struct implements [`Park`][p] using
-//! [`thread::park`][`std`] to put the thread to sleep. The kayrx reactor also
-//! implements park, but uses [`kayrx::lxar::Poll`][mio] to block the thread instead.
-//!
-//! The [`Park`][p] trait is composable. A timer implementation might decorate a
-//! [`Park`][p] implementation by checking if any timeouts have elapsed after
-//! the inner [`Park`][p] implementation unblocks.
-//!
-//! # Model
-//!
-//! Conceptually, each [`Park`][p] instance has an associated token, which is
-//! initially not present:
-//!
-//! * The [`park`] method blocks the current thread unless or until the token
-//!   is available, at which point it atomically consumes the token.
-//! * The [`unpark`] method atomically makes the token available if it wasn't
-//!   already.
-//!
-//! Some things to note:
-//!
-//! * If [`unpark`] is called before [`park`], the next call to [`park`] will
-//!   **not** block the thread.
-//! * **Spurious** wakeups are permitted, i.e., the [`park`] method may unblock
-//!   even if [`unpark`] was not called.
-//! * [`park_timeout`] does the same as [`park`] but allows specifying a maximum
-//!   time to block the thread for.
-
 use std::marker::PhantomData;
 use std::mem;
 use std::rc::Rc;
-use std::sync::atomic::AtomicUsize;
-use std::sync::atomic::Ordering::SeqCst;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Condvar, Mutex};
 use std::task::{RawWaker, RawWakerVTable, Waker};
 use std::time::Duration;
 
 /// Block the current thread.
 ///
-pub(crate) trait Park {
+/// See [module documentation][mod] for more details.
+///
+/// [mod]: ../index.html
+pub trait Park {
     /// Unpark handle type for the `Park` implementation.
     type Unpark: Unpark;
 
@@ -99,7 +65,7 @@ pub(crate) trait Park {
 ///
 /// [mod]: ../index.html
 /// [`Park`]: trait.Park.html
-pub(crate) trait Unpark: Sync + Send + 'static {
+pub trait Unpark: Sync + Send + 'static {
     /// Unblock a thread that is blocked by the associated `Park` handle.
     ///
     /// Calling `unpark` atomically makes available the unpark token, if it is
@@ -129,24 +95,38 @@ impl Unpark for Arc<dyn Unpark> {
     }
 }
 
+/// Blocks the current thread using a condition variable.
+///
+/// Implements the [`Park`] functionality by using a condition variable. An
+/// atomic variable is also used to avoid using the condition variable if
+/// possible.
+///
+/// The condition variable is cached in a thread-local variable and is shared
+/// across all `ParkThread` instances created on the same thread. This also
+/// means that an instance of `ParkThread` might be unblocked by a handle
+/// associated with a different `ParkThread` instance.
+#[derive(Debug)]
+pub struct ParkThread {
+    _anchor: PhantomData<Rc<()>>,
+}
+
 /// Error returned by [`ParkThread`]
 ///
 /// This currently is never returned, but might at some point in the future.
 ///
 /// [`ParkThread`]: struct.ParkThread.html
 #[derive(Debug)]
-pub(crate) struct ParkError {
+pub struct ParkError {
     _p: (),
 }
 
-#[derive(Debug)]
-pub(crate) struct ParkThread {
-    inner: Arc<Inner>,
+struct Parker {
+    unparker: Arc<Inner>,
 }
 
 /// Unblocks a thread that was blocked by `ParkThread`.
 #[derive(Clone, Debug)]
-pub(crate) struct UnparkThread {
+pub struct UnparkThread {
     inner: Arc<Inner>,
 }
 
@@ -157,25 +137,139 @@ struct Inner {
     condvar: Condvar,
 }
 
-const EMPTY: usize = 0;
-const PARKED: usize = 1;
-const NOTIFIED: usize = 2;
+const IDLE: usize = 0;
+const NOTIFY: usize = 1;
+const SLEEP: usize = 2;
 
 thread_local! {
-    static CURRENT_PARKER: ParkThread = ParkThread::new();
+    static CURRENT_PARKER: Parker = Parker::new();
 }
 
-// ==== impl ParkThread ====
+// ==== impl Parker ====
 
-impl ParkThread {
+impl Parker {
     pub(crate) fn new() -> Self {
         Self {
-            inner: Arc::new(Inner {
-                state: AtomicUsize::new(EMPTY),
+            unparker: Arc::new(Inner {
+                state: AtomicUsize::new(IDLE),
                 mutex: Mutex::new(()),
                 condvar: Condvar::new(),
             }),
         }
+    }
+
+    pub(crate) fn unparker(&self) -> &Arc<Inner> {
+        &self.unparker
+    }
+
+    pub(crate) fn park(&self) -> Result<(), ParkError> {
+        self.unparker.park(None)
+    }
+
+    pub(crate) fn park_timeout(&self, timeout: Duration) -> Result<(), ParkError> {
+        self.unparker.park(Some(timeout))
+    }
+}
+
+// ==== impl Inner ====
+
+impl Inner {
+    #[allow(clippy::wrong_self_convention)]
+    pub(crate) fn into_raw(this: Arc<Inner>) -> *const () {
+        Arc::into_raw(this) as *const ()
+    }
+
+    pub(crate) unsafe fn from_raw(ptr: *const ()) -> Arc<Inner> {
+        Arc::from_raw(ptr as *const Inner)
+    }
+
+    /// Park the current thread for at most `dur`.
+    pub(crate) fn park(&self, timeout: Option<Duration>) -> Result<(), ParkError> {
+        // If currently notified, then we skip sleeping. This is checked outside
+        // of the lock to avoid acquiring a mutex if not necessary.
+        match self.state.compare_and_swap(NOTIFY, IDLE, Ordering::SeqCst) {
+            NOTIFY => return Ok(()),
+            IDLE => {}
+            _ => unreachable!(),
+        }
+
+        // The state is currently idle, so obtain the lock and then try to
+        // transition to a sleeping state.
+        let mut m = self.mutex.lock().unwrap();
+
+        // Transition to sleeping
+        match self.state.compare_and_swap(IDLE, SLEEP, Ordering::SeqCst) {
+            NOTIFY => {
+                // Notified before we could sleep, consume the notification and
+                // exit
+                self.state.store(IDLE, Ordering::SeqCst);
+                return Ok(());
+            }
+            IDLE => {}
+            _ => unreachable!(),
+        }
+
+        m = match timeout {
+            Some(timeout) => self.condvar.wait_timeout(m, timeout).unwrap().0,
+            None => self.condvar.wait(m).unwrap(),
+        };
+
+        // Transition back to idle. If the state has transitioned to `NOTIFY`,
+        // this will consume that notification
+        self.state.store(IDLE, Ordering::SeqCst);
+
+        // Explicitly drop the mutex guard. There is no real point in doing it
+        // except that I find it helpful to make it explicit where we want the
+        // mutex to unlock.
+        drop(m);
+
+        Ok(())
+    }
+
+    pub(crate) fn unpark(&self) {
+        // First, try transitioning from IDLE -> NOTIFY, this does not require a
+        // lock.
+        match self.state.compare_and_swap(IDLE, NOTIFY, Ordering::SeqCst) {
+            IDLE | NOTIFY => return,
+            SLEEP => {}
+            _ => unreachable!(),
+        }
+
+        // The other half is sleeping, this requires a lock
+        let _m = self.mutex.lock().unwrap();
+
+        // Transition to NOTIFY
+        match self.state.swap(NOTIFY, Ordering::SeqCst) {
+            SLEEP => {}
+            NOTIFY => return,
+            IDLE => return,
+            _ => unreachable!(),
+        }
+
+        // Wakeup the sleeper
+        self.condvar.notify_one();
+    }
+}
+
+// ===== impl ParkThread =====
+
+impl ParkThread {
+    /// Create a new `ParkThread` handle for the current thread.
+    ///
+    /// This type cannot be moved to other threads, so it should be created on
+    /// the thread that the caller intends to park.
+    pub fn new() -> ParkThread {
+        ParkThread {
+            _anchor: PhantomData,
+        }
+    }
+
+    /// Get a reference to the `ParkThread` handle for this thread.
+    fn with_current<F, R>(&self, f: F) -> R
+    where
+        F: FnOnce(&Parker) -> R,
+    {
+        CURRENT_PARKER.with(|inner| f(inner))
     }
 }
 
@@ -184,137 +278,18 @@ impl Park for ParkThread {
     type Error = ParkError;
 
     fn unpark(&self) -> Self::Unpark {
-        let inner = self.inner.clone();
+        let inner = self.with_current(|inner| inner.unparker().clone());
         UnparkThread { inner }
     }
 
     fn park(&mut self) -> Result<(), Self::Error> {
-        self.inner.park();
+        self.with_current(|inner| inner.park())?;
         Ok(())
     }
 
     fn park_timeout(&mut self, duration: Duration) -> Result<(), Self::Error> {
-        self.inner.park_timeout(duration);
+        self.with_current(|inner| inner.park_timeout(duration))?;
         Ok(())
-    }
-}
-
-// ==== impl Inner ====
-
-impl Inner {
-    /// Park the current thread for at most `dur`.
-    fn park(&self) {
-        // If we were previously notified then we consume this notification and
-        // return quickly.
-        if self
-            .state
-            .compare_exchange(NOTIFIED, EMPTY, SeqCst, SeqCst)
-            .is_ok()
-        {
-            return;
-        }
-
-        // Otherwise we need to coordinate going to sleep
-        let mut m = self.mutex.lock().unwrap();
-
-        match self.state.compare_exchange(EMPTY, PARKED, SeqCst, SeqCst) {
-            Ok(_) => {}
-            Err(NOTIFIED) => {
-                // We must read here, even though we know it will be `NOTIFIED`.
-                // This is because `unpark` may have been called again since we read
-                // `NOTIFIED` in the `compare_exchange` above. We must perform an
-                // acquire operation that synchronizes with that `unpark` to observe
-                // any writes it made before the call to unpark. To do that we must
-                // read from the write it made to `state`.
-                let old = self.state.swap(EMPTY, SeqCst);
-                debug_assert_eq!(old, NOTIFIED, "park state changed unexpectedly");
-
-                return;
-            }
-            Err(actual) => panic!("inconsistent park state; actual = {}", actual),
-        }
-
-        loop {
-            m = self.condvar.wait(m).unwrap();
-
-            if self
-                .state
-                .compare_exchange(NOTIFIED, EMPTY, SeqCst, SeqCst)
-                .is_ok()
-            {
-                // got a notification
-                return;
-            }
-
-            // spurious wakeup, go back to sleep
-        }
-    }
-
-    fn park_timeout(&self, dur: Duration) {
-        // Like `park` above we have a fast path for an already-notified thread,
-        // and afterwards we start coordinating for a sleep. Return quickly.
-        if self
-            .state
-            .compare_exchange(NOTIFIED, EMPTY, SeqCst, SeqCst)
-            .is_ok()
-        {
-            return;
-        }
-
-        let m = self.mutex.lock().unwrap();
-
-        match self.state.compare_exchange(EMPTY, PARKED, SeqCst, SeqCst) {
-            Ok(_) => {}
-            Err(NOTIFIED) => {
-                // We must read again here, see `park`.
-                let old = self.state.swap(EMPTY, SeqCst);
-                debug_assert_eq!(old, NOTIFIED, "park state changed unexpectedly");
-
-                return;
-            }
-            Err(actual) => panic!("inconsistent park_timeout state; actual = {}", actual),
-        }
-
-        // Wait with a timeout, and if we spuriously wake up or otherwise wake up
-        // from a notification, we just want to unconditionally set the state back to
-        // empty, either consuming a notification or un-flagging ourselves as
-        // parked.
-        let (_m, _result) = self.condvar.wait_timeout(m, dur).unwrap();
-
-        match self.state.swap(EMPTY, SeqCst) {
-            NOTIFIED => {} // got a notification, hurray!
-            PARKED => {}   // no notification, alas
-            n => panic!("inconsistent park_timeout state: {}", n),
-        }
-    }
-
-    fn unpark(&self) {
-        // To ensure the unparked thread will observe any writes we made before
-        // this call, we must perform a release operation that `park` can
-        // synchronize with. To do that we must write `NOTIFIED` even if `state`
-        // is already `NOTIFIED`. That is why this must be a swap rather than a
-        // compare-and-swap that returns if it reads `NOTIFIED` on failure.
-        match self.state.swap(NOTIFIED, SeqCst) {
-            EMPTY => return,    // no one was waiting
-            NOTIFIED => return, // already unparked
-            PARKED => {}        // gotta go wake someone up
-            _ => panic!("inconsistent state in unpark"),
-        }
-
-        // There is a period between when the parked thread sets `state` to
-        // `PARKED` (or last checked `state` in the case of a spurious wake
-        // up) and when it actually waits on `cvar`. If we were to notify
-        // during this period it would be ignored and then when the parked
-        // thread went to sleep it would never wake up. Fortunately, it has
-        // `lock` locked at this stage so we can acquire `lock` to wait until
-        // it is ready to receive the notification.
-        //
-        // Releasing `lock` before the call to `notify_one` means that when the
-        // parked thread wakes it doesn't get woken only to have to wait for us
-        // to release `lock`.
-        drop(self.mutex.lock().unwrap());
-
-        self.condvar.notify_one()
     }
 }
 
@@ -332,59 +307,7 @@ impl Unpark for UnparkThread {
     }
 }
 
-// ============blocking_impl==================
-
-/// Blocks the current thread using a condition variable.
-#[derive(Debug)]
-pub(crate) struct CachedParkThread {
-    _anchor: PhantomData<Rc<()>>,
-}
-
-impl CachedParkThread {
-    /// Create a new `ParkThread` handle for the current thread.
-    ///
-    /// This type cannot be moved to other threads, so it should be created on
-    /// the thread that the caller intends to park.
-    pub(crate) fn new() -> CachedParkThread {
-        CachedParkThread {
-            _anchor: PhantomData,
-        }
-    }
-
-    pub(crate) fn get_unpark(&self) -> Result<UnparkThread, ParkError> {
-        self.with_current(|park_thread| park_thread.unpark())
-    }
-
-    /// Get a reference to the `ParkThread` handle for this thread.
-    fn with_current<F, R>(&self, f: F) -> Result<R, ParkError>
-    where
-        F: FnOnce(&ParkThread) -> R,
-    {
-        // CURRENT_PARKER.with(|inner| f(inner))
-        CURRENT_PARKER
-            .try_with(|inner| f(inner))
-            .map_err(|_| ParkError { _p: () })
-    }
-}
-
-impl Park for CachedParkThread {
-    type Unpark = UnparkThread;
-    type Error = ParkError;
-
-    fn unpark(&self) -> Self::Unpark {
-        self.get_unpark().unwrap()
-    }
-
-    fn park(&mut self) -> Result<(), Self::Error> {
-        self.with_current(|park_thread| park_thread.inner.park());
-        Ok(())
-    }
-
-    fn park_timeout(&mut self, duration: Duration) -> Result<(), Self::Error> {
-        self.with_current(|park_thread| park_thread.inner.park_timeout(duration));
-        Ok(())
-    }
-}
+static VTABLE: RawWakerVTable = RawWakerVTable::new(clone, wake, wake_by_ref, drop);
 
 impl UnparkThread {
     pub(crate) fn into_waker(self) -> Waker {
@@ -395,22 +318,8 @@ impl UnparkThread {
     }
 }
 
-impl Inner {
-    #[allow(clippy::wrong_self_convention)]
-    fn into_raw(this: Arc<Inner>) -> *const () {
-        Arc::into_raw(this) as *const ()
-    }
-
-    unsafe fn from_raw(ptr: *const ()) -> Arc<Inner> {
-        Arc::from_raw(ptr as *const Inner)
-    }
-}
-
 unsafe fn unparker_to_raw_waker(unparker: Arc<Inner>) -> RawWaker {
-    RawWaker::new(
-        Inner::into_raw(unparker),
-        &RawWakerVTable::new(clone, wake, wake_by_ref, drop_waker),
-    )
+    RawWaker::new(Inner::into_raw(unparker), &VTABLE)
 }
 
 unsafe fn clone(raw: *const ()) -> RawWaker {
@@ -420,10 +329,6 @@ unsafe fn clone(raw: *const ()) -> RawWaker {
     mem::forget(unparker.clone());
 
     unparker_to_raw_waker(unparker)
-}
-
-unsafe fn drop_waker(raw: *const ()) {
-    let _ = Inner::from_raw(raw);
 }
 
 unsafe fn wake(raw: *const ()) {

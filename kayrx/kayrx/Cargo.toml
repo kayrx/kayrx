@@ -18,6 +18,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 [features]
 default = ["macro"]
 macro = ["kayrx-macro"]
+async-traits = []
 
 [dependencies]
 kayrx-macro = { version =  "1.1.0", optional = true }

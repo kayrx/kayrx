@@ -1,108 +1,79 @@
 #![warn(
-    rust_2018_idioms,
-    unreachable_pub,
-// missing_debug_implementations,
-// missing_docs,
-)]
-#![allow(
-    warnings,
+    missing_debug_implementations,
     missing_docs,
-    type_alias_bounds,
-    clippy::type_complexity,
-    clippy::borrow_interior_mutable_const,
-    clippy::needless_doctest_main,
-    clippy::too_many_arguments,
-    clippy::new_without_default
+    rust_2018_idioms,
+    unreachable_pub
 )]
+#![deny(intra_doc_link_resolution_failure)]
+#![doc(test(
+    no_crate_inject,
+    attr(deny(warnings, rust_2018_idioms), allow(dead_code, unused_variables))
+))]
 
-//! Async time tracking
+//! Utilities for tracking time.
 //!
-//! This module provides a number of types for executing code after a set period
-//! of time.
+//! This crate provides a number of utilities for working with periods of time:
 //!
-//! * `Delay` is a future that does no work and completes at a specific `Instant`
-//!   in time.
+//! * [`Delay`]: A future that completes at a specified instant in time.
 //!
-//! * `Interval` is a stream yielding a value at a fixed period. It is
-//!   initialized with a `Duration` and repeatedly yields each time the duration
-//!   elapses.
+//! * [`Interval`] A stream that yields at fixed time intervals.
 //!
-//! * `Timeout`: Wraps a future or stream, setting an upper bound to the amount
-//!   of time it is allowed to execute. If the future or stream does not
+//! * [`Throttle`]: Throttle down a stream by enforcing a fixed delay between items.
+//!
+//! * [`Timeout`]: Wraps a future or stream, setting an upper bound to the
+//!   amount of time it is allowed to execute. If the future or stream does not
 //!   complete in time, then it is canceled and an error is returned.
 //!
-//! * `DelayQueue`: A queue where items are returned once the requested delay
+//! * [`DelayQueue`]: A queue where items are returned once the requested delay
 //!   has expired.
 //!
-//! These types are sufficient for handling a large number of scenarios
-//! involving time.
+//! These three types are backed by a [`Timer`] instance. In order for
+//! [`Delay`], [`Interval`], and [`Timeout`] to function, the associated
+//! [`Timer`] instance must be running on some thread.
 //!
-//! These types must be used from within the context of the `Runtime`.
-//!
-//! # Examples
-//!
-//! Wait 100ms and print "Hello World!"
-//!
-//! ```
-//! use kayrx::timer::delay_for;
-//! use std::time::Duration;
-//! use kayrx::karx;
-//!
-//! fn main() {
-//!     kayrx::karx::exec(async {
-//!         delay_for(Duration::from_millis(100)).await;
-//!         println!("100 ms have elapsed");
-//!     });
-//! }
-//!
-//! ```
-//!
-//! Require that an operation takes no more than 300ms. Note that this uses the
-//! `timeout` function on the `FutureExt` trait. This trait is included in the
-//! prelude.
-//!
-//! ```
-//! use kayrx::timer::{timeout, Duration};
-//!
-//! async fn long_future() {
-//!     // do work here
-//! }
-//!
-//! # async fn dox() {
-//! let res = timeout(Duration::from_secs(1), long_future()).await;
-//!
-//! if res.is_err() {
-//!     println!("operation timed out");
-//! }
-//! # }
-//! ```
+//! [`Delay`]: struct.Delay.html
+//! [`DelayQueue`]: struct.DelayQueue.html
+//! [`Throttle`]: throttle::Throttle
+//! [`Timeout`]: struct.Timeout.html
+//! [`Interval`]: struct.Interval.html
+//! [`Timer`]: timer::Timer
 
+pub mod clock;
 pub mod delay_queue;
+#[cfg(feature = "async-traits")]
+pub mod throttle;
+pub mod timeout;
+pub mod driver;
+pub mod utils;
 
-mod clock;
+mod atomic;
 mod delay;
 mod error;
-mod instant;
 mod interval;
-mod throttle;
-mod timeout;
 mod wheel;
 
-pub use std::time::Duration;
-
-pub use self::clock::clock_util::{pause, resume};
-pub use self::delay::{delay_for, delay_until, Delay};
+pub use delay::Delay;
 #[doc(inline)]
-pub use self::delay_queue::DelayQueue;
-pub use self::error::Error;
-pub use self::instant::Instant;
-pub use self::interval::{interval, interval_at, Interval};
-pub use self::throttle::{throttle, Throttle};
+pub use delay_queue::DelayQueue;
+pub use error::Error;
+pub use interval::Interval;
 #[doc(inline)]
-pub use self::timeout::{timeout, timeout_at, Elapsed, Timeout};
+pub use timeout::Timeout;
+pub use driver::{set_default, Timer};
 
-pub(crate) use self::clock::Clock;
-pub(crate) mod driver;
+use std::time::{Duration, Instant};
+
+/// Create a Future that completes at `deadline`.
+pub fn delay(deadline: Instant) -> Delay {
+    Delay::new(deadline)
+}
+
+/// Create a Future that completes in `duration` from now.
+///
+/// Equivalent to `delay(kayrx::timer::clock::now() + duration)`. Analogous to `std::thread::sleep`.
+pub fn delay_for(duration: Duration) -> Delay {
+    delay(clock::now() + duration)
+}
 
 // ===== Internal utils =====
 
