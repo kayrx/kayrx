@@ -8,7 +8,7 @@ use futures::{FutureExt, TryFutureExt};
 use log::error;
 
 use crate::rt::spawn;
-use ntex_service::{Service, ServiceFactory};
+use crate::service::{Service, ServiceFactory};
 use crate::util::counter::CounterGuard;
 
 use super::socket::{FromStream, StdStream};

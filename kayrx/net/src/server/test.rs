@@ -5,7 +5,7 @@ use std::{io, net, thread};
 use socket2::{Domain, SockAddr, Socket, Type};
 
 use crate::rt::{net::TcpStream, System};
-use crate::{Server, ServerBuilder, StreamServiceFactory};
+use crate::server::{Server, ServerBuilder, StreamServiceFactory};
 
 /// Start test server
 ///

@@ -1,37 +1,40 @@
 use std::error::Error;
 use std::future::Future;
+use std::io;
 use std::marker::PhantomData;
 use std::pin::Pin;
+use std::sync::Arc;
 use std::task::{Context, Poll};
 use std::time::Duration;
-use std::{fmt, io};
 
-pub use open_ssl::ssl::{AlpnError, SslAcceptor, SslAcceptorBuilder};
-pub use tokio_openssl::SslStream;
+use futures::future::{ok, Ready};
+use tokio_rustls::{Accept, TlsAcceptor};
 
-use futures::future::{ok, FutureExt, LocalBoxFuture, Ready};
+pub use rust_tls::{ServerConfig, Session};
+pub use tokio_rustls::server::TlsStream;
+pub use webpki_roots::TLS_SERVER_ROOTS;
 
 use crate::codec::{AsyncRead, AsyncWrite};
 use crate::rt::time::{delay_for, Delay};
-use ntex_service::{Service, ServiceFactory};
+use crate::service::{Service, ServiceFactory};
 use crate::util::counter::{Counter, CounterGuard};
 
 use super::{MAX_CONN_COUNTER, ZERO};
 
-/// Support `TLS` server connections via openssl package
+/// Support `SSL` connections via rustls package
 ///
-/// `openssl` feature enables `Acceptor` type
-pub struct Acceptor<T: AsyncRead + AsyncWrite> {
-    acceptor: SslAcceptor,
+/// `rust-tls` feature enables `RustlsAcceptor` type
+pub struct Acceptor<T> {
     timeout: Duration,
+    config: Arc<ServerConfig>,
     io: PhantomData<T>,
 }
 
 impl<T: AsyncRead + AsyncWrite> Acceptor<T> {
-    /// Create default openssl acceptor service
-    pub fn new(acceptor: SslAcceptor) -> Self {
+    /// Create rustls based `Acceptor` service factory
+    pub fn new(config: ServerConfig) -> Self {
         Acceptor {
-            acceptor,
+            config: Arc::new(config),
             timeout: Duration::from_secs(5),
             io: PhantomData,
         }
@@ -46,32 +49,30 @@ impl<T: AsyncRead + AsyncWrite> Acceptor<T> {
     }
 }
 
-impl<T: AsyncRead + AsyncWrite> Clone for Acceptor<T> {
+impl<T> Clone for Acceptor<T> {
     fn clone(&self) -> Self {
         Self {
-            acceptor: self.acceptor.clone(),
+            config: self.config.clone(),
             timeout: self.timeout,
             io: PhantomData,
         }
     }
 }
 
-impl<T> ServiceFactory for Acceptor<T>
-where
-    T: AsyncRead + AsyncWrite + Unpin + fmt::Debug + 'static,
-{
+impl<T: AsyncRead + AsyncWrite + Unpin> ServiceFactory for Acceptor<T> {
     type Request = T;
-    type Response = SslStream<T>;
+    type Response = TlsStream<T>;
     type Error = Box<dyn Error>;
-    type Config = ();
     type Service = AcceptorService<T>;
+
+    type Config = ();
     type InitError = ();
     type Future = Ready<Result<Self::Service, Self::InitError>>;
 
     fn new_service(&self, _: ()) -> Self::Future {
         MAX_CONN_COUNTER.with(|conns| {
             ok(AcceptorService {
-                acceptor: self.acceptor.clone(),
+                acceptor: self.config.clone().into(),
                 conns: conns.clone(),
                 timeout: self.timeout,
                 io: PhantomData,
@@ -80,25 +81,23 @@ where
     }
 }
 
+/// RusTLS based `Acceptor` service
 pub struct AcceptorService<T> {
-    acceptor: SslAcceptor,
+    acceptor: TlsAcceptor,
+    io: PhantomData<T>,
     conns: Counter,
     timeout: Duration,
-    io: PhantomData<T>,
 }
 
-impl<T> Service for AcceptorService<T>
-where
-    T: AsyncRead + AsyncWrite + Unpin + fmt::Debug + 'static,
-{
+impl<T: AsyncRead + AsyncWrite + Unpin> Service for AcceptorService<T> {
     type Request = T;
-    type Response = SslStream<T>;
+    type Response = TlsStream<T>;
     type Error = Box<dyn Error>;
-    type Future = AcceptorServiceResponse<T>;
+    type Future = AcceptorServiceFut<T>;
 
     #[inline]
-    fn poll_ready(&self, ctx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        if self.conns.available(ctx) {
+    fn poll_ready(&self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        if self.conns.available(cx) {
             Poll::Ready(Ok(()))
         } else {
             Poll::Pending
@@ -107,40 +106,34 @@ where
 
     #[inline]
     fn call(&self, req: Self::Request) -> Self::Future {
-        let acc = self.acceptor.clone();
-        AcceptorServiceResponse {
+        AcceptorServiceFut {
             _guard: self.conns.get(),
+            fut: self.acceptor.accept(req),
             delay: if self.timeout == ZERO {
                 None
             } else {
                 Some(delay_for(self.timeout))
             },
-            fut: async move {
-                let acc = acc;
-                tokio_openssl::accept(&acc, req).await.map_err(|e| {
-                    let e: Box<dyn Error> = Box::new(e);
-                    e
-                })
-            }
-            .boxed_local(),
         }
     }
 }
 
-pub struct AcceptorServiceResponse<T>
+pub struct AcceptorServiceFut<T>
 where
-    T: AsyncRead + AsyncWrite,
+    T: AsyncRead + AsyncWrite + Unpin,
 {
-    fut: LocalBoxFuture<'static, Result<SslStream<T>, Box<dyn Error>>>,
+    fut: Accept<T>,
     delay: Option<Delay>,
     _guard: CounterGuard,
 }
 
-impl<T: AsyncRead + AsyncWrite + Unpin> Future for AcceptorServiceResponse<T> {
-    type Output = Result<SslStream<T>, Box<dyn Error>>;
+impl<T: AsyncRead + AsyncWrite + Unpin> Future for AcceptorServiceFut<T> {
+    type Output = Result<TlsStream<T>, Box<dyn Error>>;
 
-    fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        if let Some(ref mut delay) = self.delay {
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        let this = self.get_mut();
+
+        if let Some(ref mut delay) = this.delay {
             match Pin::new(delay).poll(cx) {
                 Poll::Pending => (),
                 Poll::Ready(_) => {
@@ -152,7 +145,10 @@ impl<T: AsyncRead + AsyncWrite + Unpin> Future for AcceptorServiceResponse<T> {
             }
         }
 
-        let io = futures::ready!(Pin::new(&mut self.fut).poll(cx))?;
-        Poll::Ready(Ok(io))
+        let res = futures::ready!(Pin::new(&mut this.fut).poll(cx));
+        match res {
+            Ok(io) => Poll::Ready(Ok(io)),
+            Err(e) => Poll::Ready(Err(Box::new(e))),
+        }
     }
 }

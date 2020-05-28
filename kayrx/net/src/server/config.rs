@@ -5,7 +5,7 @@ use futures::future::{ok, Future, FutureExt, LocalBoxFuture};
 use log::error;
 
 use crate::rt::net::TcpStream;
-use ntex_service as service;
+use crate::service as service;
 use crate::util::counter::CounterGuard;
 
 use super::builder::bind_addr;

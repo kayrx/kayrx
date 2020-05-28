@@ -4,7 +4,7 @@ use std::task::{Context, Poll};
 use futures::future::{Future, FutureExt};
 use futures::stream::{unfold, Stream, StreamExt};
 
-use crate::Server;
+use crate::server::Server;
 
 /// Different types of process signals
 #[allow(dead_code)]
@@ -94,7 +94,7 @@ mod tests {
     use futures::stream::once;
 
     use super::*;
-    use crate::ServerCommand;
+    use crate::server::ServerCommand;
 
     #[ntex_rt::test]
     async fn signals() {

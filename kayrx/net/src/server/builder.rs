@@ -510,8 +510,8 @@ mod tests {
     use std::{net, thread, time};
 
     use super::*;
-    use crate::{signals, Server, TestServer};
-    use ntex_service::fn_service;
+    use crate::server::{signals, Server, TestServer};
+    use crate::service::fn_service;
 
     #[cfg(unix)]
     #[ntex_rt::test]
@@ -521,7 +521,7 @@ mod tests {
                 let mut sys = crate::rt::System::new("test");
                 let addr = TestServer::unused_addr();
                 let srv = sys.exec(|| {
-                    crate::build()
+                    crate::server::build()
                         .workers(1)
                         .disable_signals()
                         .bind("test", addr, move || fn_service(|_| ok::<_, ()>(())))

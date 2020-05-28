@@ -497,8 +497,8 @@ mod tests {
 
     use super::*;
     use crate::rt::net::TcpStream;
-    use crate::service::Factory;
-    use ntex_service::{Service, ServiceFactory};
+    use crate::server::service::Factory;
+    use crate::service::{Service, ServiceFactory};
 
     #[derive(Clone, Copy, Debug)]
     enum St {
