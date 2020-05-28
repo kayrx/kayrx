@@ -10,7 +10,7 @@ use std::pin::Pin;
 use std::task::{Context, Poll};
 use tempdir::TempDir;
 
-use kayrx::net::uds::{UnixListener, UnixStream};
+use kayrx_net::uds::{UnixListener, UnixStream};
 
 type Error = Box<dyn std::error::Error + 'static>;
 

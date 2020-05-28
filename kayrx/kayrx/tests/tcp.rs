@@ -6,7 +6,7 @@ use futures::executor;
 use futures::io::{AsyncReadExt, AsyncWriteExt};
 use futures::StreamExt;
 
-use kayrx::net::TcpListener;
+use kayrx_net::TcpListener;
 
 const THE_WINTERS_TALE: &[u8] = b"
                     Each your doing,
@@ -64,7 +64,7 @@ fn both_sides_async_using_threadpool() {
     let addr = server.local_addr().unwrap();
 
     executor::block_on(Box::pin(async move {
-        let mut client = kayrx::net::TcpStream::connect(&addr).await.unwrap();
+        let mut client = kayrx_net::TcpStream::connect(&addr).await.unwrap();
         client.write_all(THE_WINTERS_TALE).await.unwrap();
     }));
 
