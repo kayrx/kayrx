@@ -3,7 +3,7 @@ use std::io;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use crate::lxar::{self, event::Evented};
+use kayrx_lxar::{self as lxar, event::Evented};
 use slab::Slab;
 use std::task::{Context, Poll, Waker};
 

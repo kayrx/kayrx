@@ -1,8 +1,8 @@
 [package]
-name = "kayrx-linux"
+name = "kayrx-lxar"
 version = "0.10.0"
 authors = ["krircc <krircc@qq.com>"]
-documentation = "https://docs.rs/kayrx-linux/"
+documentation = "https://docs.rs/kayrx-lxar/"
 repository = "https://github.com/kayrx/kayrx"
 description = "The Kayrx Framework"
 categories = ["asynchronous", "network-programming", "web-programming"]
@@ -15,12 +15,15 @@ edition = "2018"
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
-
 [features]
 default = []
 
 
 [dependencies]
+libc = "0.2.48"
+log = "0.4"
+net2 = "0.2"
+iovec = "0.1.4"
 
 [dev-dependencies]
 

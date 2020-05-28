@@ -21,6 +21,7 @@ macro = ["kayrx-macro"]
 
 [dependencies]
 kayrx-macro = { version =  "1.1.0", optional = true }
+kayrx-lxar = {path = "../lxar"}
 crossbeam-channel = "0.4.2"
 crossbeam-deque = "0.7.3"
 crossbeam-utils = "0.7.2"
