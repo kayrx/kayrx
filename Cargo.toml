@@ -2,6 +2,7 @@
 members = [
   "kayrx/kayrx",
   "kayrx/kayrx/kayrx-macro",
+  "kayrx/eternal",
   "kayrx/lxar",
   "kayrx/net",
 ]

@@ -11,42 +11,8 @@ license = "MIT"
 readme = "README.md"
 edition = "2018"
 
-[package.metadata.docs.rs]
-features = ["openssl", "rustls"]
-
 [features]
 default = []
 
-# openssl
-openssl = ["open-ssl", "tokio-openssl"]
-
-# rustls support
-rustls = ["rust-tls", "webpki", "webpki-roots", "tokio-rustls"]
-
 [dependencies]
-ntex-codec = "0.1.2"
 ntex-rt = "0.1.1"
-ntex-rt-macros = "0.1"
-ntex-service = "0.1.1"
-
-bitflags = "1.2"
-bytes = "0.5.4"
-futures = "0.3.4"
-log = "0.4"
-mio = "0.6.19"
-num_cpus = "1.12"
-slab = "0.4"
-socket2 = "0.3.12"
-
-# FIXME: Remove it and use mio own uds feature once mio 0.7 is released
-mio-uds = { version = "0.6.7" }
-
-# openssl
-open-ssl = { version="0.10", package = "openssl", optional = true }
-tokio-openssl = { version = "0.4.0", optional = true }
-
-# rustls
-rust-tls = { version = "0.17.0", package = "rustls", optional = true }
-webpki = { version = "0.21.2", optional = true }
-webpki-roots = { version = "0.19", optional = true }
-tokio-rustls = { version = "0.13.0", optional = true }
