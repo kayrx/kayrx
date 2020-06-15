@@ -1,6 +1,6 @@
 [workspace]
 members = [
-  "kayrx/kayrx",
+  "kayrx/zkayrx",
   "kayrx/kayrx/kayrx-macro",
   "kayrx/eternal",
   "kayrx/lxar",
